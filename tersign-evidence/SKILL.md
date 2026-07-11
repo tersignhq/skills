@@ -13,7 +13,7 @@ and chain position exist **before any dispute arises**, a Tersign record is an
 exhibit, not testimony: any court, jury, auditor, or counterparty can verify it
 without trusting the parties or Tersign itself.
 
-Base URL (hosted ledger): `https://tersign-ledger.kevinn-zhang.workers.dev`
+Base URL (hosted ledger): `https://tersign.ai`
 
 ## Trust model — read this first
 
@@ -41,7 +41,7 @@ and the counter-signature recovers to `ledgerSigner`. To verify fully offline,
 recompute both yourself — the `tersign` npm package ships a verify command:
 
 ```sh
-npx tersign verify <receipt.json | 0xdigest> --ledger https://tersign-ledger.kevinn-zhang.workers.dev
+npx tersign verify <receipt.json | 0xdigest> --ledger https://tersign.ai
 ```
 
 ## Get dispute-ready evidence (the envelope)

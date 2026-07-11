@@ -1,6 +1,6 @@
 # Tersign Agent Skills
 
-Official agent skills published by [Tersign](https://tersign-ledger.kevinn-zhang.workers.dev) — the evidence layer for the agent economy.
+Official agent skills published by [Tersign](https://tersign.ai) — the evidence layer for the agent economy.
 
 | Skill | What it does |
 |---|---|
