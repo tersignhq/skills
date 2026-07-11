@@ -38,10 +38,10 @@ GET /v1/receipts/{digest}/verify
 
 `chainOk: true` = the ledger recomputed `linkDigest = keccak256(canonical({artifactDigest, prevDigest, seq}))`
 and the counter-signature recovers to `ledgerSigner`. To verify fully offline,
-recompute both yourself — the `tersign` npm package ships `tersign-verify`:
+recompute both yourself — the `tersign` npm package ships a verify command:
 
 ```sh
-npx tersign-verify <receipt.json | 0xdigest> --ledger https://tersign-ledger.kevinn-zhang.workers.dev
+npx tersign verify <receipt.json | 0xdigest> --ledger https://tersign-ledger.kevinn-zhang.workers.dev
 ```
 
 ## Get dispute-ready evidence (the envelope)
