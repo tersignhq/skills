@@ -81,8 +81,10 @@ Or run the MCP server for any agent framework: `npx tersign-mcp`
 `TERSIGN_LEDGER_SELLER_ID`). Tools cover issue / verify / refund / dispute.
 
 Agent action records (`ActionRecordV1`) capture non-payment evidence — agent
-disclosures, governance outcomes — digest-bound and GDPR-minimized, mapped to
-EU AI Act Article 50 obligations; they chain and verify exactly like receipts.
+disclosures, governance outcomes — digest-bound and GDPR-minimized. Where a
+disclosure duty applies, the record carries the disclosure's content and time
+under a third-party counter-signature rather than the discloser's own word;
+they chain and verify exactly like receipts.
 
 ## What this skill is not
 
