@@ -76,7 +76,7 @@ import { Assure, attachToExtensions } from 'tersign';
 // issue an x402 offer-receipt + compliance record, counter-signed into your chain
 ```
 
-Or run the MCP server for any agent framework: `npx tersign-mcp`
+Or run the MCP server for any agent framework: `npx tersign` (no args starts the MCP server on stdio)
 (env: `TERSIGN_SELLER_KEY`, `TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY`,
 `TERSIGN_LEDGER_SELLER_ID`). Tools cover issue / verify / refund / dispute.
 
