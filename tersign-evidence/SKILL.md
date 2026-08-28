@@ -33,12 +33,18 @@ Base URL (hosted ledger): `https://tersign.ai`
 
 ```
 GET /v1/receipts/{digest}/verify
-→ { found, sellerId, seq, prevDigest, countersignature, ledgerSigner, chainOk }
+→ { found, sellerId, seq, prevDigest, countersignature, ledgerSigner, chainOk, anchor (null if none), coAnchors?, commitment? }
 ```
 
-`chainOk: true` = the ledger recomputed `linkDigest = keccak256(canonical({artifactDigest, prevDigest, seq}))`
-and the counter-signature recovers to `ledgerSigner`. To verify fully offline,
-recompute both yourself — the `tersign` npm package ships a verify command:
+`chainOk: true` = the ledger recomputed
+`linkDigest = keccak256(artifactDigestBytes || prevDigestBytes || uint64be(seq))`
+(`prevDigest` = the previous record's `artifactDigest`; `null` at seq 1, hashed as
+32 zero bytes) and the counter-signature recovers to `ledgerSigner`. When
+`/verify` also returns `commitment`, `commitment.acc` folds
+`keccak256(acc || linkDigest)` from `keccak256("tersign-chain-commitment-v1")`
+over seq 1..commitment.seq — recompute it to confirm the record is committed
+under an anchored commitment. To verify fully offline, recompute these yourself
+— the `tersign` npm package ships a verify command:
 
 ```sh
 npx tersign verify <receipt.json | 0xdigest> --ledger https://tersign.ai
