@@ -1,0 +1,34 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "tersign",
+  "description": "Official Tersign plugin \u2014 counter-signed evidence for agent commerce. Verify a counterparty's receipts and evidence bundles offline with no account, and put your own agent's actions on a neutral, independently verifiable record.",
+  "owner": {
+    "name": "Tersign",
+    "email": "support@tersign.ai",
+    "url": "https://tersign.ai"
+  },
+  "plugins": [
+    {
+      "name": "tersign",
+      "source": "./",
+      "description": "Counter-signed evidence for agent commerce. Verify any counterparty's x402 receipt, action record or evidence bundle OFFLINE with no account and no API key; issue counter-signed receipts and disclosure records into a neutral hash-chained ledger anchored to Bitcoin; export a dispute-ready envelope for the venue that will hear it.",
+      "category": "development",
+      "homepage": "https://tersign.ai",
+      "keywords": [
+        "evidence",
+        "receipts",
+        "agent-commerce",
+        "x402",
+        "audit-trail"
+      ],
+      "mcpServers": {
+        "tersign": {
+          "command": "npx",
+          "args": [
+            "tersign"
+          ]
+        }
+      }
+    }
+  ]
+}
