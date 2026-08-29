@@ -79,12 +79,35 @@ npm install tersign
 
 ```ts
 import { Assure, attachToExtensions } from 'tersign';
-// issue an x402 offer-receipt + compliance record, counter-signed into your chain
+// issue an x402 offer-receipt + action record, counter-signed into your chain
 ```
 
-Or run the MCP server for any agent framework: `npx tersign` (no args starts the MCP server on stdio)
-(env: `TERSIGN_SELLER_KEY`, `TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY`,
-`TERSIGN_LEDGER_SELLER_ID`). Tools cover issue / verify / refund / dispute.
+Or run the MCP server for any agent framework: `npx tersign` (no args starts the MCP
+server on stdio). **No configuration is required** — since 0.4.7 the first call
+self-provisions a signer-keyed account from the OS keychain, else `~/.tersign/signer.key`.
+All env vars are optional: `TERSIGN_SELLER_KEY` brings your own key;
+`TERSIGN_LEDGER_URL` / `TERSIGN_LEDGER_API_KEY` / `TERSIGN_LEDGER_SELLER_ID` point at a
+configured seller account. Nine tools cover issue / verify / disclose / refund / dispute.
+
+**Two things that shipped 2026-08-28/29 and change what you can prove.**
+
+*Chain commitment.* Every anchor now stamps an accumulator folded over each
+counter-signed link from seq 1, so one anchored digest commits to the WHOLE prefix —
+existence *and* no-omission, not just "this record existed". A truncated or substituted
+prefix fails even though every signature in it still recovers.
+
+*The verifier is published out-of-band.* An evidence bundle ships a copy of `verify/`
+inside itself, which is fine for a worked example and wrong for evidence handed to you by
+an interested party — a bundle can ship a checker that blesses it. Fetch the checker from
+`https://tersign.ai/verify/v1/{verify_bundle,keccak,secp256k1}.py` with
+`/verify/v1/SHA256SUMS`, then `diff` it against the bundled copy. A difference is itself
+the finding.
+
+The verifier separates `PASS (integrity-only)` from `PASS — integrity AND authorship`; the
+second needs `--signer` from an address you obtained out-of-band at
+`https://tersign.ai/v1/ledger`. It also prints an `UNAUTHENTICATED` line naming the fields
+nothing signs. Carry that line into whatever you report — a verdict must never be stronger
+than its checks.
 
 Agent action records (`ActionRecordV1`) capture non-payment evidence — agent
 disclosures, governance outcomes — digest-bound and GDPR-minimized. Where a
