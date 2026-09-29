@@ -33,8 +33,8 @@ npx tersign verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213d
 That is the genesis receipt, seq 1, on the production chain. A digest is a lookup: the public
 ledger reports the record, its chain position and the anchored commitment covering it, and the CLI
 labels the answer `VALID (ledger-reported)` because nothing is recomputed on your machine. No
-account, no API key, and nothing about it depends on this plugin. To recompute, verify a receipt
-file or an evidence bundle offline, as below.
+account, no API key, and nothing about it depends on this plugin. A receipt file's signature and digest
+are checked on your machine; a bundle's chain and commitment are recomputed offline, as below.
 
 ## What you get
 

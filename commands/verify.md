@@ -13,7 +13,7 @@ report the result **without strengthening it**.
 |---|---|
 | A `0x…` 64-hex digest | `npx tersign verify <digest>` — a lookup: asks the ledger whether it holds the record and whether its counter-signed chain holds, and prints `VALID (ledger-reported)` because nothing is recomputed on this machine. Report it with that label. Add `--ledger <url>` only if they name a different ledger; the default is printed either way. |
 | A path to a receipt JSON file | `npx tersign verify <path> --signer 0x<issuer>` — fully offline, touches no chain and no network. Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
-| A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx tersign verify` checks receipts. Verify it inside its evidence bundle (step 2), or offline with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package. |
+| A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx tersign verify` checks receipts. Verify it inside its evidence bundle (step 2), or offline with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package (the discloser's signature only — no chain or counter-signature). |
 | A directory holding `manifest.json` + `chain.json` (an evidence bundle) | Go to step 2. |
 | Nothing | Run the genesis example so they see a live ledger answer: `npx tersign verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4` |
 

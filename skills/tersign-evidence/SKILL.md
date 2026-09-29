@@ -1,6 +1,6 @@
 ---
 name: tersign-evidence
-description: "Produce, verify, and submit counter-signed transaction evidence via Tersign — the neutral evidence layer for agent commerce. Use this skill when an agent needs dispute-ready evidence for any arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs a tamper-evident audit trail for compliance (action records, disclosure records). Trigger on: evidence, evidence envelope, counter-signed receipt, receipt verification, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, evidence submission, exhibit, ERC-1497 evidence, evidenceDefs, proof of delivery, proof of transaction, receipt digest, ledger verification, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is being filed or responded to and the agent holds (or its counterparty claims) transaction records — the envelope turns self-submitted testimony into an independently verifiable exhibit. Do NOT trigger for payment execution itself (use a payments skill) or for choosing an arbitration venue (use the dispute-layer skills); this skill supplies the evidence those layers consume."
+description: "Produce, verify and submit counter-signed transaction evidence via Tersign, the neutral evidence layer for agent commerce. Use when an agent needs dispute-ready evidence for an arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs an independently counter-signed record of what an agent did or disclosed. Trigger on: evidence, evidence envelope, counter-signed receipt, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, exhibit, ERC-1497 evidence, proof of delivery, proof of transaction, receipt digest, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is filed or answered and the agent holds, or its counterparty claims, transaction records. Do NOT trigger for payment execution or for choosing an arbitration venue; this skill supplies the evidence those layers consume."
 ---
 
 # Tersign Evidence
@@ -83,7 +83,7 @@ npm install tersign
 
 ```ts
 import { Assure, attachToExtensions } from 'tersign';
-// issue an x402 offer-receipt and the signed record issued beside it, counter-signed into your chain
+// sign an x402 offer-receipt and the record issued beside it; with ledger configured, the receipt is counter-signed into your chain
 ```
 
 Or run the MCP server for any agent framework: `npx tersign` (no args starts the MCP
@@ -119,12 +119,12 @@ Agent action records (`ActionRecordV1`) capture non-payment evidence — agent
 disclosures, governance outcomes — digest-bound and GDPR-minimized. A disclosure record is
 your own signed statement (kind, time, medium, text digest); Tersign counter-signs
 its chain position. Action records chain exactly like receipts; verify one offline
-inside its evidence bundle, or with `verifyActionRecord` from the `tersign` package.
+inside its evidence bundle, or with `verifyActionRecord` from the `tersign` package (the discloser's signature only — no chain or counter-signature).
 
 ## What this skill is not
 
 Tersign does not move money, hold funds, or run an arbitration venue. It is the
-evidence layer: payments happen on x402/MPP rails; `adjudicate_dispute` decides only
-machine-decidable claims, between pre-committed outcomes (refund or uphold); anything else
-escalates, and its verdict happens in whatever venue the contract names — the transcript
-is what endures across all of them.
+evidence layer: payments happen on x402/MPP rails; `adjudicate_dispute` runs deterministic
+triage — a machine-decidable claim gets a Triage Result from pre-committed outcomes (refund or
+uphold), data, not a judgment; anything else escalates to the venue the parties select. The
+transcript is what endures across all of them.
