@@ -17,26 +17,32 @@ command.
 /plugin install tersign@tersign
 ```
 
-**No configuration.** No API key, no account, no signup. The first call self-provisions a
-signer-keyed account (OS keychain, else `~/.tersign/signer.key`), and this plugin collects no
-key of its own — set `TERSIGN_SELLER_KEY` yourself only if you want to bring an existing one.
+**No configuration to verify or to record disclosures.** No API key, no signup. The first
+`record_disclosure` call self-provisions a signer-keyed account (key in the OS keychain, else
+`~/.tersign/signer.key`), and this plugin collects no key of its own — set `TERSIGN_SELLER_KEY`
+yourself only if you want to bring an existing one. Counter-signing receipts and refunds needs a
+configured seller account (`TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY`,
+`TERSIGN_LEDGER_SELLER_ID`).
 
-## Prove it before you trust it
+## See it on the production chain
 
 ```sh
 npx tersign verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4
 ```
 
-That is the genesis receipt, seq 1, on the production chain. Local EIP-712 signature recovery
-plus a public chain check — no account, no API key, and nothing about it depends on this plugin.
+That is the genesis receipt, seq 1, on the production chain. A digest is a lookup: the public
+ledger reports the record, its chain position and the anchored commitment covering it, and the CLI
+labels the answer `VALID (ledger-reported)` because nothing is recomputed on your machine. No
+account, no API key, and nothing about it depends on this plugin. To recompute, verify a receipt
+file or an evidence bundle offline, as below.
 
 ## What you get
 
 | | |
 |---|---|
 | **MCP server** (`npx tersign`, stdio) | Nine tools: `issue_receipt` · `verify_receipt` · `record_disclosure` · `verify_compliance_record` · `record_refund` · `open_dispute` · `submit_dispute_evidence` · `adjudicate_dispute` · `get_dispute` |
-| **Skill** `tersign-evidence` | Triggers on evidence, chain of custody, receipt verification, dispute filing, audit trail. Carries the recompute recipes so an agent can check a chain by hand rather than believing a status field. |
-| **Command** `/verify` | Verifies a digest, a receipt file, or a whole evidence bundle — and reports the verdict without strengthening it. |
+| **Skill** `tersign-evidence` | Triggers on evidence, chain of custody, receipt verification, dispute filing, audit trail, disclosure records. Carries the recompute recipes so an agent can check a chain by hand rather than believing a status field. |
+| **Command** `/verify` | Verifies a receipt file or a whole evidence bundle offline, or looks a digest up on the ledger — and reports the verdict without strengthening it. |
 
 ## The two things worth knowing
 

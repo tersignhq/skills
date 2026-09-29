@@ -1,7 +1,7 @@
 {
   "name": "tersign",
-  "description": "Counter-signed evidence for agent commerce. Verify any counterparty's x402 receipt, action record or evidence bundle OFFLINE with no account and no API key; issue counter-signed receipts and disclosure records into a neutral hash-chained ledger anchored to Bitcoin; export a dispute-ready envelope for the venue that will hear it. Needs no configuration: the first call self-provisions a signer-keyed account, and no key is ever collected by this plugin.",
-  "version": "0.1.0",
+  "description": "Counter-signed evidence for agent commerce. Verify a counterparty's x402 receipt file, or an evidence bundle with the action records in it, OFFLINE with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account, and this plugin collects no key); issue counter-signed receipts from a configured seller account; fetch a dispute-ready envelope for the venue that will hear it.",
+  "version": "0.1.1",
   "author": {
     "name": "Tersign",
     "email": "support@tersign.ai"

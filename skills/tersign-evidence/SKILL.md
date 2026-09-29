@@ -1,6 +1,6 @@
 ---
 name: tersign-evidence
-description: "Produce, verify, and submit counter-signed transaction evidence via Tersign — the neutral evidence layer for agent commerce. Use this skill when an agent needs dispute-ready evidence for any arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs a tamper-evident audit trail for compliance (EU AI Act Article 50 disclosures, audit-log exports). Trigger on: evidence, evidence envelope, counter-signed receipt, receipt verification, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, evidence submission, exhibit, ERC-1497 evidence, evidenceDefs, proof of delivery, proof of transaction, receipt digest, ledger verification, x402 receipt, offer-receipt, action record, agent disclosure record, Article 50 evidence, compliance export. Also trigger when a dispute is being filed or responded to and the agent holds (or its counterparty claims) transaction records — the envelope turns self-submitted testimony into an independently verifiable exhibit. Do NOT trigger for payment execution itself (use a payments skill) or for choosing an arbitration venue (use the dispute-layer skills); this skill supplies the evidence those layers consume."
+description: "Produce, verify, and submit counter-signed transaction evidence via Tersign — the neutral evidence layer for agent commerce. Use this skill when an agent needs dispute-ready evidence for any arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs a tamper-evident audit trail for compliance (action records, disclosure records). Trigger on: evidence, evidence envelope, counter-signed receipt, receipt verification, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, evidence submission, exhibit, ERC-1497 evidence, evidenceDefs, proof of delivery, proof of transaction, receipt digest, ledger verification, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is being filed or responded to and the agent holds (or its counterparty claims) transaction records — the envelope turns self-submitted testimony into an independently verifiable exhibit. Do NOT trigger for payment execution itself (use a payments skill) or for choosing an arbitration venue (use the dispute-layer skills); this skill supplies the evidence those layers consume."
 ---
 
 # Tersign Evidence
@@ -43,11 +43,15 @@ GET /v1/receipts/{digest}/verify
 `/verify` also returns `commitment`, `commitment.acc` folds
 `keccak256(acc || linkDigest)` from `keccak256("tersign-chain-commitment-v1")`
 over seq 1..commitment.seq — recompute it to confirm the record is committed
-under an anchored commitment. To verify fully offline, recompute these yourself
-— the `tersign` npm package ships a verify command:
+under an anchored commitment. To verify fully offline, recompute these yourself.
+The `tersign` npm package ships a verify command. A receipt file is checked on your
+machine (pass `--signer` with the issuer's address, obtained out-of-band, or the signer
+prints `UNAUTHENTICATED`); a digest is a ledger lookup, labelled `VALID (ledger-reported)`
+because nothing is recomputed:
 
 ```sh
-npx tersign verify <receipt.json | 0xdigest> --ledger https://tersign.ai
+npx tersign verify <receipt.json> --signer 0x<issuer>
+npx tersign verify <0xdigest> --ledger https://tersign.ai
 ```
 
 ## Get dispute-ready evidence (the envelope)
@@ -79,15 +83,17 @@ npm install tersign
 
 ```ts
 import { Assure, attachToExtensions } from 'tersign';
-// issue an x402 offer-receipt + action record, counter-signed into your chain
+// issue an x402 offer-receipt and the signed record issued beside it, counter-signed into your chain
 ```
 
 Or run the MCP server for any agent framework: `npx tersign` (no args starts the MCP
-server on stdio). **No configuration is required** — since 0.4.7 the first call
-self-provisions a signer-keyed account from the OS keychain, else `~/.tersign/signer.key`.
-All env vars are optional: `TERSIGN_SELLER_KEY` brings your own key;
-`TERSIGN_LEDGER_URL` / `TERSIGN_LEDGER_API_KEY` / `TERSIGN_LEDGER_SELLER_ID` point at a
-configured seller account. Nine tools cover issue / verify / disclose / refund / dispute.
+server on stdio). **Verifying and recording disclosures need no configuration** — since
+0.4.7 the first `record_disclosure` call self-provisions a signer-keyed account (key from
+the OS keychain, else `~/.tersign/signer.key`); `TERSIGN_SELLER_KEY` brings your own key.
+Counter-signing receipts and refunds needs a configured seller account
+(`TERSIGN_LEDGER_URL` / `TERSIGN_LEDGER_API_KEY` / `TERSIGN_LEDGER_SELLER_ID`); without
+one, `issue_receipt` returns a signed receipt that is not chained. The dispute tools need
+`TERSIGN_LEDGER_URL`. Nine tools cover issue / verify / disclose / refund / dispute.
 
 **Two things that shipped 2026-08-28/29 and change what you can prove.**
 
@@ -110,13 +116,15 @@ nothing signs. Carry that line into whatever you report — a verdict must never
 than its checks.
 
 Agent action records (`ActionRecordV1`) capture non-payment evidence — agent
-disclosures, governance outcomes — digest-bound and GDPR-minimized. Where a
-disclosure duty applies, the record carries the disclosure's content and time
-under a third-party counter-signature rather than the discloser's own word;
-they chain and verify exactly like receipts.
+disclosures, governance outcomes — digest-bound and GDPR-minimized. A disclosure record is
+your own signed statement (kind, time, medium, text digest); Tersign counter-signs
+its chain position. Action records chain exactly like receipts; verify one offline
+inside its evidence bundle, or with `verifyActionRecord` from the `tersign` package.
 
 ## What this skill is not
 
-Tersign does not move money, hold funds, or adjudicate. It is the evidence
-layer: payments happen on x402/MPP rails, verdicts happen in whatever venue the
-contract names — the transcript is what endures across all of them.
+Tersign does not move money, hold funds, or run an arbitration venue. It is the
+evidence layer: payments happen on x402/MPP rails; `adjudicate_dispute` decides only
+machine-decidable claims, between pre-committed outcomes (refund or uphold); anything else
+escalates, and its verdict happens in whatever venue the contract names — the transcript
+is what endures across all of them.
