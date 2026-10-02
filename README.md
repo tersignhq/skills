@@ -87,5 +87,5 @@ commands/verify.md                /verify
 [MCP registry](https://registry.modelcontextprotocol.io/?search=tersign) as
 `io.github.tersignhq/evidence`
 
-MIT. Acceptance and evidentiary weight are always the receiving venue's decision — an export
+Apache-2.0 (earlier versions were MIT). Acceptance and evidentiary weight are always the receiving venue's decision — an export
 mapping is never a compliance certification.
