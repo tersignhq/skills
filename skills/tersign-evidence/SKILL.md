@@ -115,7 +115,7 @@ run the fetched `verify_bundle.py`, and `diff` the release against the bundled c
 other stop before `verify_bundle.py` runs (a failed or 404 fetch, a content-address `FAILED`, a
 `SHA256SUMS` mismatch), report that step's output and stop; never fetch another release
 instead. If the only failure is `files.closedSet` and every extra file it names is under
-`verify/__pycache__/`, re-run on a fresh copy of the archive (a fresh unzip) and report both
+`verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh unzip) and report both
 runs. A difference is itself the finding unless the archive is older than the checker at that
 address: an archive built before 2026-10-08 can carry an earlier checker than
 `https://tersign.ai/verify/v1/` serves. A different release differs by design. The newest

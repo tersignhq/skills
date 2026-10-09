@@ -84,7 +84,7 @@ slash is optional); if `VERIFY.md` names anything else, or nothing, stop rather 
 release for it. For any stop before the `python3` line (the address lines, a `curl` failure or
 404, a content-address `FAILED`, a `SHA256SUMS` mismatch), report that step's output and stop;
 never fetch another release instead. If the only failure is `files.closedSet` and every extra
-file it names is under `verify/__pycache__/`, re-run on a fresh copy of the archive (a fresh
+file it names is under `verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh
 unzip) and report both runs. The last line diffs the fetched files against the bundle's
 `verify/`. A difference is itself the finding unless the archive is older than the checker at
 that address: an archive built before 2026-10-08 can carry an earlier checker than

@@ -88,7 +88,7 @@ fields a forger edits, and a verdict must never be stronger than its checks.
 On a FAIL, name the failing check verbatim (`chain.acc`, `files.closedSet`,
 `anchors.methodsDeclared`, …) and what that specific check means. Do not paraphrase a failure
 into "something looks off". If the only failure is `files.closedSet` and every extra file it
-names is under `verify/__pycache__/`, re-run on a fresh copy of the archive (a fresh unzip) and
+names is under `verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh unzip) and
 report both runs.
 
 ### 4. If they want more
