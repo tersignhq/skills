@@ -40,11 +40,14 @@ python3 "$OOB/verify_bundle.py" "$bundle" &&
 diff -r -x SHA256SUMS "$OOB" "$bundle/verify"
 ```
 
-From the second line on, each line runs only if the one before it succeeded.
+From the second line on, each line runs only if the one before it succeeded. For any stop before
+the `python3` line (the address lines, a `curl` failure or 404, a content-address `FAILED`, a
+`SHA256SUMS` mismatch), report that step's output and stop; never fetch another release instead.
 
 - **The address.** The `grep -c`, `sed` and `grep -Eqx` lines accept exactly one `base=` line,
-  and only if it is exactly `https://tersign.ai/verify/v1` or `https://tersign.ai/verify/sha256/`
-  followed by 64 lowercase hex digits (`/{2}` is the `//` after `https:`). If they stop the chain,
+  and only if it is exactly `https://tersign.ai/verify/v1` or
+  `https://tersign.ai/verify/sha256/<digest>` with `<digest>` 64 lowercase hex digits; a trailing
+  slash is optional (`/{2}` is the `//` after `https:`). If they stop the chain,
   run `grep -n '^base=' <bundle-dir>/VERIFY.md`, report what it printed (nothing means the archive
   names no published checker), and stop. Do not pick a release for it: a different release can
   fail an honest archive.
@@ -52,17 +55,17 @@ From the second line on, each line runs only if the one before it succeeded.
   hashes to the digest in the address, before `shasum -c` checks the files against it.
 - **The diff.** The last line prints nothing when the bundle's `verify/` is byte-identical to the
   release its VERIFY.md names. A difference is itself the finding unless the archive is older than
-  the checker at that address: one built before 2026-10-07 can carry an earlier checker. The
-  files at a content address never change, so that exception applies only when `base` is
-  `https://tersign.ai/verify/v1`. Then read `createdAt` at the top level of
-  `<bundle-dir>/manifest.json` (the verifier prints the same value on its `UNAUTHENTICATED` line).
-  If it is earlier than 2026-10-07, report the published checker's verdict and report the
-  difference as expected for an archive of that age, adding that `createdAt` is the archive's own
-  unsigned claim. In every other case **a difference is itself the finding**, and you should say
-  so loudly.
+  the checker at that address: an archive built before 2026-10-08 can carry an earlier checker
+  than `https://tersign.ai/verify/v1/` serves. The files at a content address never change, so
+  that exception applies only when `base` is `https://tersign.ai/verify/v1`. Then read `createdAt`
+  at the top level of `<bundle-dir>/manifest.json` (the verifier prints the same value on its
+  `UNAUTHENTICATED` line). If it is earlier than 2026-10-08, report the published checker's
+  verdict and report the difference as expected for an archive of that age, adding that
+  `createdAt` is the archive's own unsigned claim. In every other case **a difference is itself
+  the finding**, and you should say so loudly.
 
-Never diff against `https://tersign.ai/verify/latest/`, or against `/verify/v1/` unless VERIFY.md
-names it: a different release differs by design. Every release is listed at
+Never diff against `https://tersign.ai/verify/latest/`, or against `https://tersign.ai/verify/v1/`
+unless VERIFY.md names it: a different release differs by design. Every release is listed at
 https://tersign.ai/verify/releases.json.
 
 Stdlib Python only; no install, no account.
@@ -84,7 +87,9 @@ fields a forger edits, and a verdict must never be stronger than its checks.
 
 On a FAIL, name the failing check verbatim (`chain.acc`, `files.closedSet`,
 `anchors.methodsDeclared`, …) and what that specific check means. Do not paraphrase a failure
-into "something looks off".
+into "something looks off". If the only failure is `files.closedSet` and every extra file it
+names is under `verify/__pycache__/`, re-run on a fresh copy of the archive (a fresh unzip) and
+report both runs.
 
 ### 4. If they want more
 

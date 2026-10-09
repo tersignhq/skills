@@ -58,25 +58,39 @@ fields nothing signs. A verdict should never be stronger than its checks, includ
 
 For an evidence bundle handed to you by an interested party, fetch the checker out-of-band rather
 than running the copy inside the archive — a bundle can ship a checker that blesses it. Fetch the
-release the archive was built with, which section 0 of its `VERIFY.md` names on its `base=` line:
+release the archive was built with, which section 0 of its `VERIFY.md` names on its `base=` line
+(`https://tersign.ai/verify/sha256/<digest>`, or `https://tersign.ai/verify/v1` in earlier
+archives). Set `bundle` to the bundle's directory:
 
 ```sh
-base=<the base= address in section 0 of the bundle's VERIFY.md>   # https://tersign.ai/verify/sha256/<digest>, or https://tersign.ai/verify/v1 in earlier archives
-curl -fsSL "$base/SHA256SUMS" -o SHA256SUMS
-case $base in */sha256/*) echo "${base##*/}  SHA256SUMS" | shasum -a 256 -c ;; esac   # the list the address names
-for f in verify_bundle.py keccak.py secp256k1.py; do curl -fsSL "$base/$f" -o "$f"; done
-shasum -a 256 -c SHA256SUMS
+bundle=<bundle-dir>
+[ "$(grep -c '^base=' "$bundle/VERIFY.md")" = 1 ] &&
+base=$(sed -n 's/^base=//p' "$bundle/VERIFY.md") &&
+printf '%s\n' "$base" | grep -Eqx 'https:/{2}tersign\.ai/verify/(v1|sha256/[0-9a-f]{64})/?' &&
+base=${base%/} && OOB=$(mktemp -d) &&
+curl -fsSL "$base/SHA256SUMS" -o "$OOB/SHA256SUMS" &&
+case $base in */sha256/*) ( cd "$OOB" && echo "${base##*/}  SHA256SUMS" | shasum -a 256 -c ) ;; esac &&
+for f in verify_bundle.py keccak.py secp256k1.py; do curl -fsSL "$base/$f" -o "$OOB/$f"; done &&
+( cd "$OOB" && shasum -a 256 -c SHA256SUMS ) &&
+python3 "$OOB/verify_bundle.py" "$bundle" &&
+diff -r -x SHA256SUMS "$OOB" "$bundle/verify"
 ```
 
-Use the address only if it is exactly `https://tersign.ai/verify/v1` or
-`https://tersign.ai/verify/sha256/` followed by 64 lowercase hex digits; if `VERIFY.md` names
-anything else, or nothing, stop rather than choosing a release for it. Run the fetched
-`verify_bundle.py` on the bundle, then diff the fetched files against the bundle's `verify/`. A
-difference is itself the finding unless the archive is older than the checker at that address:
-one built before 2026-10-07 can carry an earlier checker than `/verify/v1/` serves. The newest
-release is at https://tersign.ai/verify/latest/ and every release is listed at
-https://tersign.ai/verify/releases.json; a release other than the one an archive names differs
-from its `verify/` by design.
+Every fetch lands in a new temporary directory, never in the bundle, and from the second line on,
+each line runs only if the one before it succeeded. The `grep -c`, `sed` and `grep -Eqx` lines
+use the address only if it is exactly `https://tersign.ai/verify/v1` or
+`https://tersign.ai/verify/sha256/<digest>` with `<digest>` 64 lowercase hex digits (a trailing
+slash is optional); if `VERIFY.md` names anything else, or nothing, stop rather than choosing a
+release for it. For any stop before the `python3` line (the address lines, a `curl` failure or
+404, a content-address `FAILED`, a `SHA256SUMS` mismatch), report that step's output and stop;
+never fetch another release instead. If the only failure is `files.closedSet` and every extra
+file it names is under `verify/__pycache__/`, re-run on a fresh copy of the archive (a fresh
+unzip) and report both runs. The last line diffs the fetched files against the bundle's
+`verify/`. A difference is itself the finding unless the archive is older than the checker at
+that address: an archive built before 2026-10-08 can carry an earlier checker than
+https://tersign.ai/verify/v1/ serves. The newest release is at https://tersign.ai/verify/latest/
+and every release is listed at https://tersign.ai/verify/releases.json; a release other than the
+one an archive names differs from its `verify/` by design.
 
 `/verify` does this for you.
 

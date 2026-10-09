@@ -106,16 +106,21 @@ prefix fails even though every signature in it still recovers.
 inside itself, which is fine for a worked example and wrong for evidence handed to you by
 an interested party — a bundle can ship a checker that blesses it. Fetch the release the
 archive was built with, from the address on the `base=` line in section 0 of its `VERIFY.md`:
-a content address `https://tersign.ai/verify/sha256/<digest>/` (every release since
-2026-10-08), or `https://tersign.ai/verify/v1/` (earlier archives). Use it only if it is
-exactly one of those two forms; if `VERIFY.md` names anything else, or nothing, say so and stop
-rather than choosing a release. For a content address, check that the fetched `SHA256SUMS`
-hashes to the digest in the address; then check the files against it, run the fetched
-`verify_bundle.py`, and `diff` the release against the bundled copy. A difference is itself the
-finding unless the archive is older than the checker at that address: one built before
-2026-10-07 can carry an earlier checker than `/verify/v1/` serves. A different release differs
-by design. The newest release is at `https://tersign.ai/verify/latest/`, and
-`https://tersign.ai/verify/releases.json` lists them all.
+a content address `https://tersign.ai/verify/sha256/<digest>` (every release since
+2026-10-08), or `https://tersign.ai/verify/v1` (earlier archives). Use it only if it is
+exactly one of those two forms, a trailing slash optional; if `VERIFY.md` names anything else,
+or nothing, say so and stop rather than choosing a release. For a content address, check that
+the fetched `SHA256SUMS` hashes to the digest in the address; then check the files against it,
+run the fetched `verify_bundle.py`, and `diff` the release against the bundled copy. For any
+other stop before `verify_bundle.py` runs (a failed or 404 fetch, a content-address `FAILED`, a
+`SHA256SUMS` mismatch), report that step's output and stop; never fetch another release
+instead. If the only failure is `files.closedSet` and every extra file it names is under
+`verify/__pycache__/`, re-run on a fresh copy of the archive (a fresh unzip) and report both
+runs. A difference is itself the finding unless the archive is older than the checker at that
+address: an archive built before 2026-10-08 can carry an earlier checker than
+`https://tersign.ai/verify/v1/` serves. A different release differs by design. The newest
+release is at `https://tersign.ai/verify/latest/`, and `https://tersign.ai/verify/releases.json`
+lists them all.
 
 The verifier separates `PASS (integrity-only)` from `PASS — integrity AND authorship`; the
 second needs `--signer` from an address you obtained out-of-band at
