@@ -21,19 +21,49 @@ report the result **without strengthening it**.
 
 A bundle ships a copy of `verify/` **inside itself**. That is fine for a worked example and wrong
 for evidence handed over by an interested party: a bundle can ship a checker that blesses it. So
-fetch the verifier from the published location and run *that* copy:
+fetch the published release the archive was built with and run *that* copy. Section 0 of
+`<bundle-dir>/VERIFY.md` names it on its one `base=` line: a content address
+`https://tersign.ai/verify/sha256/<digest>` (every release since 2026-10-08), or
+`https://tersign.ai/verify/v1` (earlier archives).
 
 ```bash
-base=https://tersign.ai/verify/v1
-mkdir -p /tmp/tersign-oob && cd /tmp/tersign-oob
-curl -fsSL "$base/SHA256SUMS" -o SHA256SUMS
-for f in verify_bundle.py keccak.py secp256k1.py; do curl -fsSL "$base/$f" -o "$f"; done
-shasum -a 256 -c SHA256SUMS          # published digests must match what you fetched
-python3 /tmp/tersign-oob/verify_bundle.py <bundle-dir>
+bundle=<bundle-dir>
+[ "$(grep -c '^base=' "$bundle/VERIFY.md")" = 1 ] &&
+base=$(sed -n 's/^base=//p' "$bundle/VERIFY.md") &&
+printf '%s\n' "$base" | grep -Eqx 'https:/{2}tersign\.ai/verify/(v1|sha256/[0-9a-f]{64})/?' &&
+base=${base%/} && OOB=$(mktemp -d) &&
+curl -fsSL "$base/SHA256SUMS" -o "$OOB/SHA256SUMS" &&
+case $base in */sha256/*) ( cd "$OOB" && echo "${base##*/}  SHA256SUMS" | shasum -a 256 -c ) ;; esac &&
+for f in verify_bundle.py keccak.py secp256k1.py; do curl -fsSL "$base/$f" -o "$OOB/$f"; done &&
+( cd "$OOB" && shasum -a 256 -c SHA256SUMS ) &&
+python3 "$OOB/verify_bundle.py" "$bundle" &&
+diff -r -x SHA256SUMS "$OOB" "$bundle/verify"
 ```
 
-Then `diff -r /tmp/tersign-oob <bundle-dir>/verify` (ignoring `SHA256SUMS`). On an honest bundle
-they are identical — **a difference is itself the finding**, and you should say so loudly.
+From the second line on, each line runs only if the one before it succeeded.
+
+- **The address.** The `grep -c`, `sed` and `grep -Eqx` lines accept exactly one `base=` line,
+  and only if it is exactly `https://tersign.ai/verify/v1` or `https://tersign.ai/verify/sha256/`
+  followed by 64 lowercase hex digits (`/{2}` is the `//` after `https:`). If they stop the chain,
+  run `grep -n '^base=' <bundle-dir>/VERIFY.md`, report what it printed (nothing means the archive
+  names no published checker), and stop. Do not pick a release for it: a different release can
+  fail an honest archive.
+- **The release.** For a content address, the `case` line checks that the fetched `SHA256SUMS`
+  hashes to the digest in the address, before `shasum -c` checks the files against it.
+- **The diff.** The last line prints nothing when the bundle's `verify/` is byte-identical to the
+  release its VERIFY.md names. A difference is itself the finding unless the archive is older than
+  the checker at that address: one built before 2026-10-07 can carry an earlier checker. The
+  files at a content address never change, so that exception applies only when `base` is
+  `https://tersign.ai/verify/v1`. Then read `createdAt` at the top level of
+  `<bundle-dir>/manifest.json` (the verifier prints the same value on its `UNAUTHENTICATED` line).
+  If it is earlier than 2026-10-07, report the published checker's verdict and report the
+  difference as expected for an archive of that age, adding that `createdAt` is the archive's own
+  unsigned claim. In every other case **a difference is itself the finding**, and you should say
+  so loudly.
+
+Never diff against `https://tersign.ai/verify/latest/`, or against `/verify/v1/` unless VERIFY.md
+names it: a different release differs by design. Every release is listed at
+https://tersign.ai/verify/releases.json.
 
 Stdlib Python only; no install, no account.
 

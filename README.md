@@ -57,14 +57,26 @@ which requires a signer address obtained **out-of-band** from
 fields nothing signs. A verdict should never be stronger than its checks, including ours.
 
 For an evidence bundle handed to you by an interested party, fetch the checker out-of-band rather
-than running the copy inside the archive — a bundle can ship a checker that blesses it:
+than running the copy inside the archive — a bundle can ship a checker that blesses it. Fetch the
+release the archive was built with, which section 0 of its `VERIFY.md` names on its `base=` line:
 
 ```sh
-base=https://tersign.ai/verify/v1
+base=<the base= address in section 0 of the bundle's VERIFY.md>   # https://tersign.ai/verify/sha256/<digest>, or https://tersign.ai/verify/v1 in earlier archives
 curl -fsSL "$base/SHA256SUMS" -o SHA256SUMS
+case $base in */sha256/*) echo "${base##*/}  SHA256SUMS" | shasum -a 256 -c ;; esac   # the list the address names
 for f in verify_bundle.py keccak.py secp256k1.py; do curl -fsSL "$base/$f" -o "$f"; done
 shasum -a 256 -c SHA256SUMS
 ```
+
+Use the address only if it is exactly `https://tersign.ai/verify/v1` or
+`https://tersign.ai/verify/sha256/` followed by 64 lowercase hex digits; if `VERIFY.md` names
+anything else, or nothing, stop rather than choosing a release for it. Run the fetched
+`verify_bundle.py` on the bundle, then diff the fetched files against the bundle's `verify/`. A
+difference is itself the finding unless the archive is older than the checker at that address:
+one built before 2026-10-07 can carry an earlier checker than `/verify/v1/` serves. The newest
+release is at https://tersign.ai/verify/latest/ and every release is listed at
+https://tersign.ai/verify/releases.json; a release other than the one an archive names differs
+from its `verify/` by design.
 
 `/verify` does this for you.
 
