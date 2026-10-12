@@ -130,8 +130,14 @@ hashes to the digest in a content address, or, for `https://tersign.ai/verify/v1
 `verify_bundle.py`, and `diff` the release against the bundled copy. For any other stop before
 `verify_bundle.py` runs (a failed or 404 fetch, a digest `FAILED`, a `SHA256SUMS` mismatch),
 report that step's output and stop; never fetch another release instead.
+Archives built before the published checker releases (their `manifest.json` names `"seller"`,
+not `"party"`) cannot be read by any published release. If the published release fails with
+`bundle.unreadable` naming `'party'`, say that the archive predates the published releases, run
+the archive's own bundled `verify/` checker (`python3 -B "$bundle/verify/verify_bundle.py"
+"$bundle"`, with `bundle` set as `/verify` sets it; code that came inside the archive), and report its verdict labelled as checked only
+by the archive's bundled checker, not out of band. Never present that as an out-of-band verdict.
 If the only failure is `files.closedSet` and every extra file it names is under
-`verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh unzip) and report both
+`verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh unzip into a new directory made with `mktemp -d`) and report both
 runs. A difference is itself the finding unless the archive is older than the checker at that
 address: an archive built before 2026-10-08 can carry an earlier checker than
 `https://tersign.ai/verify/v1/` serves. A different release differs by design. The newest
@@ -159,7 +165,11 @@ disclosures, governance outcomes. A disclosure record is your own signed stateme
 carries a digest of the disclosure text, never the text, while the agent ID, the kind, the
 medium and resource URL when given, and the time go as they are; Tersign counter-signs its
 chain position. Action records chain exactly like receipts; verify one offline
-inside its evidence bundle, or with `verifyActionRecord` from the `tersign` package (the discloser's signature only — no chain or counter-signature).
+inside its evidence bundle, or with `verifyActionRecord(signed, issuerAddress)` from the `tersign`
+package (the discloser's signature only — no chain or counter-signature; `/verify` shows the
+commands). It needs the issuer's address, obtained out of band: from the issuer, never from the
+record. Without it, the result shows only that the record is well formed and who signed it;
+report it that way, never as the issuer's record.
 
 ## What this skill is not
 

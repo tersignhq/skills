@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "tersign",
-  "description": "Tersign plugin \u2014 counter-signed evidence for agent commerce. Verify a counterparty's receipts and evidence bundles offline with no account, and put your own agent's actions on a neutral, independently verifiable record.",
+  "description": "Tersign plugin \u2014 counter-signed evidence for agent commerce. Verify a counterparty's receipt files offline and its evidence bundles with a published checker fetched from tersign.ai, with no account, and put your own agent's actions on a neutral, independently verifiable record.",
   "owner": {
     "name": "Tersign",
     "email": "support@tersign.ai",
@@ -11,7 +11,7 @@
     {
       "name": "tersign",
       "source": "./",
-      "description": "Counter-signed evidence for agent commerce. Verify a counterparty's x402 receipt file, or an evidence bundle with the action records in it, OFFLINE with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account with a key generated on your machine); issue counter-signed receipts from a seller account you configure in the plugin's settings; fetch a dispute-ready envelope for the venue that will hear it.",
+      "description": "Counter-signed evidence for agent commerce. Verify a counterparty's x402 receipt file offline, or check an evidence bundle with the action records in it using a published checker fetched from tersign.ai, with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account with a key generated on your machine); issue counter-signed receipts from a seller account you configure in the plugin's settings; fetch a dispute-ready envelope for the venue that will hear it.",
       "category": "development",
       "homepage": "https://tersign.ai",
       "keywords": [
