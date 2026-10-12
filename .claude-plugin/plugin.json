@@ -42,7 +42,7 @@
     "ledger_url": {
       "type": "string",
       "title": "Ledger URL (optional)",
-      "description": "Base URL of the ledger, normally https://tersign.ai, entered without a trailing slash (with a trailing slash, receipts and refunds go to //v1/…, which https://tersign.ai answers with 404). Needed for counter-signed receipts, refunds and the dispute tools; when set, disclosures are recorded there too. Leave empty and disclosures go to https://tersign.ai while the receipt-chaining, refund and dispute tools stay off."
+      "description": "Base URL of the ledger, normally https://tersign.ai. Needed for counter-signed receipts, refunds and the dispute tools; when set, disclosures are recorded there too. Leave empty and disclosures go to https://tersign.ai while the receipt-chaining, refund and dispute tools stay off."
     }
   }
 }

@@ -23,13 +23,13 @@ machine (see [What this plugin runs, sends and stores](#what-this-plugin-runs-se
 
 ## Settings
 
-Every setting is optional. Leave them all empty and the server behaves exactly as `tersign` 0.6.3
+Every setting is optional. Leave them all empty and the server behaves exactly as `tersign` 0.6.4
 does when started with no configuration.
 
 | Setting | What it is | Needed for |
 |---|---|---|
 | `seller_key` (sensitive) | A 0x-prefixed 32-byte hex private key to sign with, instead of the generated one | Bringing a key you already use |
-| `ledger_url` | Base URL of the ledger, normally `https://tersign.ai`, entered without a trailing slash | Counter-signed receipts, refunds, the dispute tools |
+| `ledger_url` | Base URL of the ledger, normally `https://tersign.ai` | Counter-signed receipts, refunds, the dispute tools |
 | `ledger_api_key` (sensitive) | API key of a Tersign seller account | Counter-signed receipts, refunds, respondent evidence |
 | `ledger_seller_id` | Seller ID of that account | Counter-signed receipts, refunds |
 
@@ -42,9 +42,7 @@ the others in your user `settings.json`.
 The plugin passes the settings to the server as `TERSIGN_SELLER_KEY`, `TERSIGN_LEDGER_URL`,
 `TERSIGN_LEDGER_API_KEY` and `TERSIGN_LEDGER_SELLER_ID`, empty when unset. Variables of those
 names exported in your shell do not reach the server; use the settings instead. When a tool's
-error names one of those variables, set the matching setting. With `tersign` 0.6.3, a
-`ledger_url` that ends in `/` sends receipts and refunds to `//v1/…`, a path https://tersign.ai
-answers with 404.
+error names one of those variables, set the matching setting.
 
 Three more variables reach the server from the environment Claude Code runs in, when they are set
 there: `TERSIGN_ISSUER_NAME`, `TERSIGN_ISSUER_JURISDICTION` and `TERSIGN_ISSUER_TAX_ID`. They are
@@ -55,7 +53,7 @@ signs and sends to the ledger, as the table under
 ## See it on the production chain
 
 ```sh
-npx -y tersign@0.6.3 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4
+npx -y tersign@0.6.4 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4
 ```
 
 That is the genesis receipt, seq 1, on the production chain. A digest is a lookup: the public
@@ -68,7 +66,7 @@ are checked on your machine; a bundle's chain and commitment are recomputed offl
 
 | | |
 |---|---|
-| **MCP server** (`npx -y tersign@0.6.3`, stdio) | Nine tools: `issue_receipt` · `verify_receipt` · `record_disclosure` · `verify_compliance_record` · `record_refund` · `open_dispute` · `submit_dispute_evidence` · `adjudicate_dispute` · `get_dispute` |
+| **MCP server** (`npx -y tersign@0.6.4`, stdio) | Nine tools: `issue_receipt` · `verify_receipt` · `record_disclosure` · `verify_compliance_record` · `record_refund` · `open_dispute` · `submit_dispute_evidence` · `adjudicate_dispute` · `get_dispute` |
 | **Skill** `tersign-evidence` | Triggers on evidence, chain of custody, receipt verification, dispute filing, audit trail, disclosure records. Carries the recompute recipes so an agent can check a chain by hand rather than believing a status field. |
 | **Command** `/verify` | Verifies a receipt file or a whole evidence bundle on your machine, or looks a digest up on the ledger — and reports the verdict without strengthening it. |
 
@@ -156,8 +154,8 @@ one an archive names differs from its `verify/` by design.
 
 ## What this plugin runs, sends and stores
 
-**What it runs.** Claude Code starts the MCP server with `npx -y tersign@0.6.3`, over stdio. npx
-downloads the [`tersign`](https://www.npmjs.com/package/tersign) package, version 0.6.3, and its
+**What it runs.** Claude Code starts the MCP server with `npx -y tersign@0.6.4`, over stdio. npx
+downloads the [`tersign`](https://www.npmjs.com/package/tersign) package, version 0.6.4, and its
 dependencies (`@modelcontextprotocol/sdk`, `viem`, `zod` and theirs) from the npm registry your npm
 configuration names (https://registry.npmjs.org by default), then runs it on your machine. The pin
 covers `tersign` itself: the package declares its dependencies as version ranges (`^1.29.0`,
@@ -205,8 +203,8 @@ send.
 
 **What the command and the skill run.** `/verify` tells Claude to run:
 
-- `npx -y tersign@0.6.3 verify <0xdigest>`, which asks the ledger (https://tersign.ai, or the one named with
-  `--ledger`) for `GET /v1/receipts/<digest>/verify`, and `npx -y tersign@0.6.3 verify <receipt.json>
+- `npx -y tersign@0.6.4 verify <0xdigest>`, which asks the ledger (https://tersign.ai, or the one named with
+  `--ledger`) for `GET /v1/receipts/<digest>/verify`, and `npx -y tersign@0.6.4 verify <receipt.json>
   --signer 0x…`, which checks a receipt file on your machine and contacts no chain and no ledger.
   npx fetches `tersign` and its dependencies from the npm registry when they are not already cached.
 - For an evidence bundle, the `curl` lines above: they download `SHA256SUMS`, `verify_bundle.py`,
@@ -220,7 +218,7 @@ send.
   `verify/verify_bundle.py`, against the archive: code that came inside the archive, run on your
   machine (`-B` keeps Python from writing bytecode into the archive).
 - For a standalone action record, `npm install --prefix <temporary directory> --save-exact
-  --ignore-scripts tersign@0.6.3` into a new temporary directory, which downloads `tersign` and
+  --ignore-scripts tersign@0.6.4` into a new temporary directory, which downloads `tersign` and
   its dependencies from the npm registry without running their install scripts, then
   `node --input-type=module -e …` in that directory, which calls `verifyActionRecord` on the record
   file on your machine and contacts no chain and no ledger.
@@ -231,9 +229,9 @@ send.
 
 The `tersign-evidence` skill runs nothing by itself. It instructs Claude to recompute chains rather
 than trust a status field, to use the same public endpoints (`/v1/receipts/<digest>/verify`,
-`/v1/receipts/<digest>/envelope?venue=…`, `/v1/ledger`) and `npx -y tersign@0.6.3 verify`, to
+`/v1/receipts/<digest>/envelope?venue=…`, `/v1/ledger`) and `npx -y tersign@0.6.4 verify`, to
 fetch a bundle's checker from the address in its `VERIFY.md`, and to use the MCP tools above. For a
-seller wiring receipts into their own server it shows `npm install tersign@0.6.3`; when that is
+seller wiring receipts into their own server it shows `npm install --save-exact tersign@0.6.4`; when that is
 run, npm writes `node_modules/`, `package.json` and `package-lock.json` into the project directory
 it runs in.
 
@@ -246,7 +244,7 @@ npm keeps the downloaded package in its cache (`~/.npm` by default). Nothing els
 apart from the new temporary directories `/verify` creates (one for a bundle's checker, one for
 the fresh unzip of an archive when it re-runs the checker on a fresh copy, and one for the
 `tersign` package when it checks a standalone action record, where npm writes `node_modules/`,
-`package.json` and `package-lock.json`) and, when the skill's `npm install tersign@0.6.3` is
+`package.json` and `package-lock.json`) and, when the skill's `npm install --save-exact tersign@0.6.4` is
 run, the files npm writes into that project.
 
 ## Layout
@@ -254,7 +252,7 @@ run, the files npm writes into that project.
 ```
 .claude-plugin/plugin.json        the plugin manifest, with the optional settings
 .claude-plugin/marketplace.json   so this repo is installable as a marketplace
-.mcp.json                         npx -y tersign@0.6.3, over stdio, settings passed as its environment
+.mcp.json                         npx -y tersign@0.6.4, over stdio, settings passed as its environment
 skills/tersign-evidence/          the skill
 commands/verify.md                /verify
 ```
