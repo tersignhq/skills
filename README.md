@@ -73,10 +73,9 @@ are checked on your machine; a bundle's chain and commitment are recomputed offl
 ## The two things worth knowing
 
 **Verification needs nobody's permission.** Every check above runs against a counterparty's
-artifact with no account. Checking a receipt file touches no chain and
-no ledger; it runs through npx, which may fetch the `tersign` package from the npm registry when it
-is not cached. The evidence-bundle checker is stdlib Python and, once fetched, runs with no network
-at all. Using Tersign's services, including the `record_disclosure` tool, is subject to the
+artifact with no account. Checking a receipt file touches no chain and no ledger; it runs through
+npx, which may fetch the `tersign` package from the npm registry when it is not cached. The
+evidence-bundle checker is stdlib Python and, once fetched, runs with no network at all. Using Tersign's services, including the `record_disclosure` tool, is subject to the
 [Terms](https://tersign.ai/legal/terms), which include business-only use and the data-use terms in
 Section 9 that apply to free-tier content.
 
@@ -135,16 +134,15 @@ never fetch another release instead. If the only failure is `files.closedSet` an
 file it names is under `verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh
 unzip into a new directory made with `mktemp -d`) and report both runs.
 
-Archives built before the published checker releases (their `manifest.json` names `"seller"`,
-not `"party"`) cannot be read by any published release. If the `python3` line prints
+An archive whose `manifest.json` names `"seller"`, not `"party"`, was built before the published
+checker releases, and no published release can read it. If the `python3` line prints
 `FAIL bundle.unreadable` naming `'party'`, the archive predates the published releases: run the
 archive's own bundled checker, `python3 -B "$bundle/verify/verify_bundle.py" "$bundle"` (code
 that came inside the archive), and report its verdict labelled as checked only by the archive's
 bundled checker, not out of band. That is never an out-of-band verdict: the bundled copy is the
 one a bundle can ship to bless itself.
 
-The last line diffs the fetched files against the bundle's
-`verify/`. A difference is itself the finding unless the archive is older than the checker at
+The last line diffs the fetched files against the bundle's `verify/`. A difference is itself the finding unless the archive is older than the checker at
 that address: an archive built before 2026-10-08 can carry an earlier checker than
 https://tersign.ai/verify/v1/ serves. The newest release is at https://tersign.ai/verify/latest/
 and every release is listed at https://tersign.ai/verify/releases.json; a release other than the
@@ -196,10 +194,9 @@ each has the form Section 11.5 sets out), for the establishment, exercise or def
 claims (the payer's dispute rights). A dispute record already opened on the record is kept
 unchanged, including the claimant's address, the signed dispute, and any adjudication inputs and
 rationale, which may include the transaction hash; so are the record's refund records, including
-the refund amount and reason. Anyone who already
-holds a copy of a record keeps it, and anyone holding a record's digest can look it up. Put no
-personal data into an agent ID, a statement, a note, a supply description or any other field you
-send.
+the refund amount and reason. Anyone who already holds a copy of a record keeps it, and anyone
+holding a record's digest can look it up. Put no personal data into an agent ID, a statement, a
+note, a supply description or any other field you send.
 
 **What the command and the skill run.** `/verify` tells Claude to run:
 
@@ -231,9 +228,9 @@ The `tersign-evidence` skill runs nothing by itself. It instructs Claude to reco
 than trust a status field, to use the same public endpoints (`/v1/receipts/<digest>/verify`,
 `/v1/receipts/<digest>/envelope?venue=…`, `/v1/ledger`) and `npx -y tersign@0.6.4 verify`, to
 fetch a bundle's checker from the address in its `VERIFY.md`, and to use the MCP tools above. For a
-seller wiring receipts into their own server it shows `npm install --save-exact tersign@0.6.4`; when that is
-run, npm writes `node_modules/`, `package.json` and `package-lock.json` into the project directory
-it runs in.
+seller wiring receipts into their own server it shows `npm install --save-exact tersign@0.6.4`;
+when that is run, npm writes `node_modules/`, `package.json` and `package-lock.json` into the
+project directory it runs in.
 
 **What it stores.** When no `seller_key` is set, the server reads its signing key from the macOS
 keychain (service `tersign-signer`), else from `~/.tersign/signer.key`. If neither exists, it
@@ -244,8 +241,10 @@ npm keeps the downloaded package in its cache (`~/.npm` by default). Nothing els
 apart from the new temporary directories `/verify` creates (one for a bundle's checker, one for
 the fresh unzip of an archive when it re-runs the checker on a fresh copy, and one for the
 `tersign` package when it checks a standalone action record, where npm writes `node_modules/`,
-`package.json` and `package-lock.json`) and, when the skill's `npm install --save-exact tersign@0.6.4` is
-run, the files npm writes into that project.
+`package.json` and `package-lock.json`), the bytecode cache some Python installations keep for
+their own standard library (the macOS `/usr/bin/python3` keeps one under
+`~/Library/Caches/com.apple.python`) and, when the skill's `npm install --save-exact tersign@0.6.4`
+is run, the files npm writes into that project.
 
 ## Layout
 

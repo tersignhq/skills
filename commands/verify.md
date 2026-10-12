@@ -75,9 +75,9 @@ From the second line on, each line runs only if the one before it succeeded. For
 the `python3` line (the address lines, a `curl` failure or 404, a digest `FAILED`, a
 `SHA256SUMS` mismatch), report that step's output and stop; never fetch another release instead.
 
-- **An archive older than the published releases.** Archives built before the published checker
-  releases (their `manifest.json` names `"seller"`, not `"party"`) cannot be read by any
-  published release. If the `python3` line prints `FAIL bundle.unreadable` naming `'party'`, say
+- **An archive older than the published releases.** An archive whose `manifest.json` names
+  `"seller"`, not `"party"`, was built before the published checker releases, and no published
+  release can read it. If the `python3` line prints `FAIL bundle.unreadable` naming `'party'`, say
   that the archive predates the published releases, run the archive's own bundled checker,
   `python3 -B "$bundle/verify/verify_bundle.py" "$bundle"` (code that came inside the archive,
   run on this machine), and report its verdict labelled as checked only by the archive's bundled
