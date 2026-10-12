@@ -47,7 +47,7 @@ error names one of those variables, set the matching setting.
 ## See it on the production chain
 
 ```sh
-npx tersign verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4
+npx -y tersign@0.6.3 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4
 ```
 
 That is the genesis receipt, seq 1, on the production chain. A digest is a lookup: the public
@@ -149,8 +149,8 @@ field you send.
 
 **What the command and the skill run.** `/verify` tells Claude to run:
 
-- `npx tersign verify <0xdigest>`, which asks the ledger (https://tersign.ai, or the one named with
-  `--ledger`) for `GET /v1/receipts/<digest>/verify`, and `npx tersign verify <receipt.json>
+- `npx -y tersign@0.6.3 verify <0xdigest>`, which asks the ledger (https://tersign.ai, or the one named with
+  `--ledger`) for `GET /v1/receipts/<digest>/verify`, and `npx -y tersign@0.6.3 verify <receipt.json>
   --signer 0x…`, which checks a receipt file offline. npx fetches `tersign` from the npm registry
   when it is not already installed.
 - For an evidence bundle, the `curl` lines above: they download `SHA256SUMS`, `verify_bundle.py`,
@@ -163,7 +163,7 @@ field you send.
 
 The `tersign-evidence` skill runs nothing by itself. It instructs Claude to recompute chains rather
 than trust a status field, to use the same public endpoints (`/v1/receipts/<digest>/verify`,
-`/v1/receipts/<digest>/envelope?venue=…`) and `npx tersign verify`, to fetch a bundle's checker
+`/v1/receipts/<digest>/envelope?venue=…`) and `npx -y tersign@0.6.3 verify`, to fetch a bundle's checker
 from the address in its `VERIFY.md`, and to use the MCP tools above.
 
 **What it stores.** When no `seller_key` is set, the server reads its signing key from the macOS

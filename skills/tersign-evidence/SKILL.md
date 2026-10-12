@@ -50,8 +50,8 @@ prints `UNAUTHENTICATED`); a digest is a ledger lookup, labelled `VALID (ledger-
 because nothing is recomputed:
 
 ```sh
-npx tersign verify <receipt.json> --signer 0x<issuer>
-npx tersign verify <0xdigest> --ledger https://tersign.ai
+npx -y tersign@0.6.3 verify <receipt.json> --signer 0x<issuer>
+npx -y tersign@0.6.3 verify <0xdigest> --ledger https://tersign.ai
 ```
 
 ## Get dispute-ready evidence (the envelope)
@@ -97,7 +97,7 @@ one, `issue_receipt` returns a signed receipt that is not chained. The dispute t
 `ledger_url`. The plugin passes these to the server as `TERSIGN_SELLER_KEY`,
 `TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY` and `TERSIGN_LEDGER_SELLER_ID`, so when a tool's
 error names one of those variables, point the user to the matching setting: a variable exported
-in a shell does not reach the server. Outside Claude Code, `npx tersign` (no args) starts the same
+in a shell does not reach the server. Outside Claude Code, `npx -y tersign@0.6.3` (no args) starts the same
 server on stdio; the package README at https://www.npmjs.com/package/tersign lists its settings.
 Nine tools cover issue / verify / disclose / refund / dispute.
 

@@ -11,11 +11,11 @@ report the result **without strengthening it**.
 
 | What they gave you | Command |
 |---|---|
-| A `0x…` 64-hex digest | `npx tersign verify <digest>` — a lookup: asks the ledger whether it holds the record and whether its counter-signed chain holds, and prints `VALID (ledger-reported)` because nothing is recomputed on this machine. Report it with that label. Add `--ledger <url>` only if they name a different ledger; the default is printed either way. |
-| A path to a receipt JSON file | `npx tersign verify <path> --signer 0x<issuer>` — fully offline, touches no chain and no network. Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
-| A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx tersign verify` checks receipts. Verify it inside its evidence bundle (step 2), or offline with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package (the discloser's signature only — no chain or counter-signature). |
+| A `0x…` 64-hex digest | `npx -y tersign@0.6.3 verify <digest>` — a lookup: asks the ledger whether it holds the record and whether its counter-signed chain holds, and prints `VALID (ledger-reported)` because nothing is recomputed on this machine. Report it with that label. Add `--ledger <url>` only if they name a different ledger; the default is printed either way. |
+| A path to a receipt JSON file | `npx -y tersign@0.6.3 verify <path> --signer 0x<issuer>` — fully offline, touches no chain and no network. Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
+| A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx -y tersign@0.6.3 verify` checks receipts. Verify it inside its evidence bundle (step 2), or offline with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package (the discloser's signature only — no chain or counter-signature). |
 | A directory holding `manifest.json` + `chain.json` (an evidence bundle) | Go to step 2. |
-| Nothing | Run the genesis example so they see a live ledger answer: `npx tersign verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4` |
+| Nothing | Run the genesis example so they see a live ledger answer: `npx -y tersign@0.6.3 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4` |
 
 ### 2. Evidence bundles — fetch the checker out-of-band
 
