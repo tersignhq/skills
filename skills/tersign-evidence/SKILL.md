@@ -86,14 +86,20 @@ import { Assure, attachToExtensions } from 'tersign';
 // sign an x402 offer-receipt and the record issued beside it; with ledger configured, the receipt is counter-signed into your chain
 ```
 
-Or run the MCP server for any agent framework: `npx tersign` (no args starts the MCP
-server on stdio). **Verifying and recording disclosures need no configuration** — since
+Or use the MCP server, which this plugin runs for you in Claude Code (`npx -y tersign@0.6.3`,
+stdio). **Verifying and recording disclosures need no configuration** — since
 0.4.7 the first `record_disclosure` call self-provisions a signer-keyed account (key from
-the OS keychain, else `~/.tersign/signer.key`); `TERSIGN_SELLER_KEY` brings your own key.
-Counter-signing receipts and refunds needs a configured seller account
-(`TERSIGN_LEDGER_URL` / `TERSIGN_LEDGER_API_KEY` / `TERSIGN_LEDGER_SELLER_ID`); without
+the OS keychain, else `~/.tersign/signer.key`, generated on first start when neither exists).
+Everything else is an optional plugin setting, set with `/plugin configure tersign@tersign`:
+`seller_key` brings your own key. Counter-signing receipts and refunds needs a configured
+seller account (`ledger_url` / `ledger_api_key` / `ledger_seller_id`); without
 one, `issue_receipt` returns a signed receipt that is not chained. The dispute tools need
-`TERSIGN_LEDGER_URL`. Nine tools cover issue / verify / disclose / refund / dispute.
+`ledger_url`. The plugin passes these to the server as `TERSIGN_SELLER_KEY`,
+`TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY` and `TERSIGN_LEDGER_SELLER_ID`, so when a tool's
+error names one of those variables, point the user to the matching setting: a variable exported
+in a shell does not reach the server. Outside Claude Code, `npx tersign` (no args) starts the same
+server on stdio; the package README at https://www.npmjs.com/package/tersign lists its settings.
+Nine tools cover issue / verify / disclose / refund / dispute.
 
 **Two things that shipped 2026-08-28/29 and change what you can prove.**
 

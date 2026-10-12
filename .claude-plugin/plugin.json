@@ -1,7 +1,8 @@
 {
   "name": "tersign",
-  "description": "Counter-signed evidence for agent commerce. Verify a counterparty's x402 receipt file, or an evidence bundle with the action records in it, OFFLINE with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account, and this plugin collects no key); issue counter-signed receipts from a configured seller account; fetch a dispute-ready envelope for the venue that will hear it.",
-  "version": "0.1.2",
+  "displayName": "Tersign",
+  "description": "Counter-signed evidence for agent commerce. Verify a counterparty's x402 receipt file, or an evidence bundle with the action records in it, OFFLINE with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account with a key generated on your machine); issue counter-signed receipts from a seller account you configure in the plugin's settings; fetch a dispute-ready envelope for the venue that will hear it.",
+  "version": "0.2.0",
   "author": {
     "name": "Tersign",
     "email": "support@tersign.ai"
@@ -15,5 +16,33 @@
     "agent-commerce",
     "x402",
     "audit-trail"
-  ]
+  ],
+  "documentationUrl": "https://github.com/tersignhq/skills#readme",
+  "supportUrl": "https://github.com/tersignhq/skills/issues",
+  "privacyPolicyUrl": "https://tersign.ai/legal/privacy",
+  "termsOfServiceUrl": "https://tersign.ai/legal/terms",
+  "userConfig": {
+    "seller_key": {
+      "type": "string",
+      "title": "Signing key (optional)",
+      "description": "A 0x-prefixed 32-byte hex private key to sign with, instead of the key the server generates on first use. It never leaves this machine: records are signed locally and only signatures reach the ledger. Leave empty to use the generated key.",
+      "sensitive": true
+    },
+    "ledger_api_key": {
+      "type": "string",
+      "title": "Ledger API key (optional)",
+      "description": "API key of a Tersign seller account. Sent as a bearer token to the ledger URL when issuing counter-signed receipts, recording refunds and filing respondent evidence. Leave empty to verify and record disclosures only.",
+      "sensitive": true
+    },
+    "ledger_seller_id": {
+      "type": "string",
+      "title": "Ledger seller ID (optional)",
+      "description": "Seller ID of that account. Counter-signed receipts and refunds need it together with the API key and the ledger URL."
+    },
+    "ledger_url": {
+      "type": "string",
+      "title": "Ledger URL (optional)",
+      "description": "Base URL of the ledger, normally https://tersign.ai. Needed for counter-signed receipts, refunds and the dispute tools; when set, disclosures are recorded there too. Leave empty and disclosures go to https://tersign.ai while the receipt-chaining, refund and dispute tools stay off."
+    }
+  }
 }

@@ -4,9 +4,9 @@
 
 # Tersign for Claude Code
 
-The official Tersign plugin, published by [Tersign](https://tersign.ai) — the evidence layer for
-the agent economy. It bundles the MCP server, the `tersign-evidence` skill, and a `/verify`
-command.
+The Tersign plugin for Claude Code, published by [Tersign](https://tersign.ai) — the evidence
+layer for the agent economy. It bundles the MCP server, the `tersign-evidence` skill, and a
+`/verify` command.
 
 **Venues rotate. The transcript endures.**
 
@@ -18,11 +18,31 @@ command.
 ```
 
 **No configuration to verify or to record disclosures.** No API key, no signup. The first
-`record_disclosure` call self-provisions a signer-keyed account (key in the OS keychain, else
-`~/.tersign/signer.key`), and this plugin collects no key of its own — set `TERSIGN_SELLER_KEY`
-yourself only if you want to bring an existing one. Counter-signing receipts and refunds needs a
-configured seller account (`TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY`,
-`TERSIGN_LEDGER_SELLER_ID`).
+`record_disclosure` call self-provisions a signer-keyed account with a key generated on your
+machine (see [What this plugin runs, sends and stores](#what-this-plugin-runs-sends-and-stores)).
+
+## Settings
+
+Every setting is optional. Leave them all empty and the server behaves exactly as `tersign` 0.6.3
+does when started with no configuration.
+
+| Setting | What it is | Needed for |
+|---|---|---|
+| `seller_key` (sensitive) | A 0x-prefixed 32-byte hex private key to sign with, instead of the generated one | Bringing a key you already use |
+| `ledger_url` | Base URL of the ledger, normally `https://tersign.ai` | Counter-signed receipts, refunds, the dispute tools |
+| `ledger_api_key` (sensitive) | API key of a Tersign seller account | Counter-signed receipts, refunds, respondent evidence |
+| `ledger_seller_id` | Seller ID of that account | Counter-signed receipts, refunds |
+
+Set them inside Claude Code with `/plugin configure tersign@tersign`, the plugin's configuration
+dialog, which masks the sensitive values. The `/config` panel also lists `ledger_url` and
+`ledger_seller_id`. From a shell, `claude plugin configure tersign@tersign` shows which settings
+are set. Claude Code keeps the sensitive values in your operating system's credential store and
+the others in your user `settings.json`.
+
+The plugin passes the settings to the server as `TERSIGN_SELLER_KEY`, `TERSIGN_LEDGER_URL`,
+`TERSIGN_LEDGER_API_KEY` and `TERSIGN_LEDGER_SELLER_ID`, empty when unset. Variables of those
+names exported in your shell do not reach the server; use the settings instead. When a tool's
+error names one of those variables, set the matching setting.
 
 ## See it on the production chain
 
@@ -40,7 +60,7 @@ are checked on your machine; a bundle's chain and commitment are recomputed offl
 
 | | |
 |---|---|
-| **MCP server** (`npx tersign`, stdio) | Nine tools: `issue_receipt` · `verify_receipt` · `record_disclosure` · `verify_compliance_record` · `record_refund` · `open_dispute` · `submit_dispute_evidence` · `adjudicate_dispute` · `get_dispute` |
+| **MCP server** (`npx -y tersign@0.6.3`, stdio) | Nine tools: `issue_receipt` · `verify_receipt` · `record_disclosure` · `verify_compliance_record` · `record_refund` · `open_dispute` · `submit_dispute_evidence` · `adjudicate_dispute` · `get_dispute` |
 | **Skill** `tersign-evidence` | Triggers on evidence, chain of custody, receipt verification, dispute filing, audit trail, disclosure records. Carries the recompute recipes so an agent can check a chain by hand rather than believing a status field. |
 | **Command** `/verify` | Verifies a receipt file or a whole evidence bundle offline, or looks a digest up on the ledger — and reports the verdict without strengthening it. |
 
@@ -94,12 +114,72 @@ one an archive names differs from its `verify/` by design.
 
 `/verify` does this for you.
 
+## What this plugin runs, sends and stores
+
+**What it runs.** Claude Code starts the MCP server with `npx -y tersign@0.6.3`, over stdio. npx
+downloads the [`tersign`](https://www.npmjs.com/package/tersign) package, version 0.6.3, and its
+dependencies (`@modelcontextprotocol/sdk`, `viem`, `zod` and theirs) from the npm registry your npm
+configuration names (https://registry.npmjs.org by default), then runs it on your machine. Its
+source is at https://github.com/tersignhq/tersign-js. The plugin has no hooks and runs nothing else
+on its own.
+
+**What the MCP tools send.** `{ledger}` is `ledger_url` when set. When it is empty,
+`record_disclosure` uses https://tersign.ai, and the tools that need a ledger URL return a
+configuration error without any network request.
+
+| Tool | Network request | What it sends |
+|---|---|---|
+| `verify_receipt`, `verify_compliance_record` | None | Nothing: they run offline |
+| `record_disclosure` | `POST {ledger}/v1/disclose` | A disclosure record signed with your key: the agent ID, the disclosure kind, the medium and resource URL when given, the time, and a digest of the disclosure text. The text itself never leaves your machine. No API key is sent; the first call creates a free account bound to your key's address |
+| `issue_receipt` | `POST {ledger}/v1/receipts`, only when `ledger_url`, `ledger_api_key` and `ledger_seller_id` are all set; otherwise none | The API key as a bearer token, the seller ID, the signed receipt (network, resource URL, payer address, time, transaction hash) and its compliance record (supply description, tax scheme and currency, principal when given, and the issuer name, jurisdiction and tax ID, which are `unnamed seller` and `unknown` unless `TERSIGN_ISSUER_NAME`, `TERSIGN_ISSUER_JURISDICTION` or `TERSIGN_ISSUER_TAX_ID` is set in the environment Claude Code runs in) |
+| `record_refund` | `POST {ledger}/v1/refunds`, with the same three settings | The API key as a bearer token, the original receipt digest, the amount and the reason |
+| `open_dispute` | `POST {ledger}/v1/disputes`, when `ledger_url` is set | A dispute signed with your key: the receipt digest, the reason, the claimed amount, the statement when given, and the time |
+| `submit_dispute_evidence` | `POST {ledger}/v1/disputes/{digest}/evidence`, when `ledger_url` is set | Evidence signed with your key: the dispute digest, your role, and each artifact's kind, digest, time and note (digests only; the content stays with you). As respondent, also the API key as a bearer token when one is set |
+| `adjudicate_dispute` | `POST {ledger}/v1/disputes/{digest}/adjudicate`, when `ledger_url` is set | The dispute digest, in the address |
+| `get_dispute` | `GET {ledger}/v1/disputes/{digest}`, when `ledger_url` is set | The dispute digest, in the address |
+
+The server makes no other network requests. Your signing key is never sent: only signatures made
+with it are.
+
+**Records are permanent.** The ledger is append-only and hash-chained, and its chain commitments
+are anchored publicly, so a record it accepts (a disclosure, a receipt, a dispute, evidence or a
+verdict) cannot be edited or deleted afterwards, and anyone holding the record's digest can look it
+up. Put no personal data into an agent ID, a statement, a note, a supply description or any other
+field you send.
+
+**What the command and the skill run.** `/verify` tells Claude to run:
+
+- `npx tersign verify <0xdigest>`, which asks the ledger (https://tersign.ai, or the one named with
+  `--ledger`) for `GET /v1/receipts/<digest>/verify`, and `npx tersign verify <receipt.json>
+  --signer 0x…`, which checks a receipt file offline. npx fetches `tersign` from the npm registry
+  when it is not already installed.
+- For an evidence bundle, the `curl` lines above: they download `SHA256SUMS`, `verify_bundle.py`,
+  `keccak.py` and `secp256k1.py` from the https://tersign.ai/verify/ release the bundle's
+  `VERIFY.md` names into a new temporary directory, check them with `shasum`, run
+  `python3 verify_bundle.py` on your machine against the bundle (standard library only, no
+  network), and `diff` the release against the bundle's own copy.
+- When you ask for more, `curl` to `https://tersign.ai/v1/receipts/<digest>/verify` or
+  `https://tersign.ai/v1/receipts/<digest>/envelope`.
+
+The `tersign-evidence` skill runs nothing by itself. It instructs Claude to recompute chains rather
+than trust a status field, to use the same public endpoints (`/v1/receipts/<digest>/verify`,
+`/v1/receipts/<digest>/envelope?venue=…`) and `npx tersign verify`, to fetch a bundle's checker
+from the address in its `VERIFY.md`, and to use the MCP tools above.
+
+**What it stores.** When no `seller_key` is set, the server reads its signing key from the macOS
+keychain (service `tersign-signer`), else from `~/.tersign/signer.key`. If neither exists, it
+generates a key on first start and stores it in the keychain, or, where no keychain is available,
+in `~/.tersign/signer.key` (mode 0600, in a 0700 directory). That key is your evidence identity:
+back it up. Claude Code stores the plugin settings as described under [Settings](#settings), and
+npm keeps the downloaded package in its cache (`~/.npm` by default). Nothing else is written,
+apart from the temporary directory `/verify` creates for a bundle's checker.
+
 ## Layout
 
 ```
-.claude-plugin/plugin.json        the plugin manifest
+.claude-plugin/plugin.json        the plugin manifest, with the optional settings
 .claude-plugin/marketplace.json   so this repo is installable as a marketplace
-.mcp.json                         npx tersign, over stdio
+.mcp.json                         npx -y tersign@0.6.3, over stdio, settings passed as its environment
 skills/tersign-evidence/          the skill
 commands/verify.md                /verify
 ```
