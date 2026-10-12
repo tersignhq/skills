@@ -39,7 +39,7 @@ the printed result as follows:
 - With `issuer` set, `"valid":true` means the record has not changed since it was signed and its
   signature recovers to that address. `"valid":false` with `"reason":"unexpected signer"` means
   someone else signed it (`signer`); any other `reason` is the failure, quoted.
-- With `issuer` empty, `"valid":true` shows only that the record is well formed and who signed it
+- With `issuer` empty, `"valid":true` shows only that the record has not changed since it was signed and who signed it
   (`signer`, an address read from the signature, not checked against anyone). Report it that way,
   in those words; never as the issuer's record and never as "verified".
 
@@ -75,14 +75,13 @@ From the second line on, each line runs only if the one before it succeeded. For
 the `python3` line (the address lines, a `curl` failure or 404, a digest `FAILED`, a
 `SHA256SUMS` mismatch), report that step's output and stop; never fetch another release instead.
 
-- **An archive older than the published releases.** An archive whose `manifest.json` names
-  `"seller"`, not `"party"`, was built before the published checker releases, and no published
-  release can read it. If the `python3` line prints `FAIL bundle.unreadable` naming `'party'`, say
-  that the archive predates the published releases, run the archive's own bundled checker,
-  `python3 -B "$bundle/verify/verify_bundle.py" "$bundle"` (code that came inside the archive,
-  run on this machine), and report its verdict labelled as checked only by the archive's bundled
-  checker, not out of band. Never present that as an out-of-band verdict: the bundled copy is the
-  one a bundle can ship to bless itself. Skip the diff for such an archive.
+- **An archive no published release can read.** No published release can read an archive whose
+  `manifest.json` names `"seller"`, not `"party"` (the manifest format used before the published
+  checker releases). If the `python3` line prints `FAIL bundle.unreadable`, say plainly that no
+  published Tersign release can check this archive out of band and that the archive cannot be
+  verified that way, and report every `FAIL` line the published checker printed before it, which
+  still count. Never run the checker inside the archive instead (it is the copy a bundle can ship
+  to bless itself), and never call the archive older than it claims to be.
 
 - **The address.** The `grep -c`, `sed` and `grep -Eqx` lines accept exactly one `base=` line,
   and only if it is exactly `https://tersign.ai/verify/v1` or
@@ -112,7 +111,7 @@ Never diff against `https://tersign.ai/verify/latest/`, or against `https://ters
 unless VERIFY.md names it: a different release differs by design. Every release is listed at
 https://tersign.ai/verify/releases.json.
 
-Stdlib Python only; no install, no account, and the checker makes no network request.
+Stdlib Python only; no install, no account, and the published checker makes no network request.
 
 ### 3. Report it honestly — this is the part that matters
 
@@ -121,14 +120,15 @@ The block runs the checker without `--signer`, so the most it can print is
 `curl -s https://tersign.ai/v1/ledger` (the production ledger's address; never take it from the
 artifact under test) and run the block again with `--signer <ledgerSigner>` added after
 `"$bundle"` on its `python3` line, using the value exactly as served: it already starts with
-`0x`, so add no second prefix. For an archive older than the published releases, add it to the
-bundled checker's line instead and keep that verdict's label. Add `--party 0x<address>` there
-too only when the user has the party's address from the party itself, out of band, never from
-the bundle. Skip the re-run when
+`0x`, so add no second prefix. Add `--party <address>` to that line too only when the user has
+the party's address from the party itself, out of band, never from the bundle; write it as `0x`
+and 40 hex digits, with no second prefix. Skip the re-run when
 the first verdict or a `SIGNER` line names a published test key (the synthetic example archives
 use them): no `--signer` value establishes authorship of such an archive. If the re-run fails a
-signer check after the first run passed, report both: the archive is internally consistent, but
-its counter-signatures do not recover to that address.
+check the first run passed, report both runs and name the failing check: the archive is
+internally consistent, but it does not bind to the address you supplied (`--signer` for
+`trust.ledgerSigner==--signer`, `record[k].countersig` and `anchors.ledgerSignature`; `--party`
+for `trust.partySigner==--party`, `trust.actionSigner==--party` and `record[k].partySig`).
 
 The checker prints one of three passing verdicts. Report the one it printed, in its own words,
 and preserve the distinction:

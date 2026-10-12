@@ -134,13 +134,13 @@ never fetch another release instead. If the only failure is `files.closedSet` an
 file it names is under `verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh
 unzip into a new directory made with `mktemp -d`) and report both runs.
 
-An archive whose `manifest.json` names `"seller"`, not `"party"`, was built before the published
-checker releases, and no published release can read it. If the `python3` line prints
-`FAIL bundle.unreadable` naming `'party'`, the archive predates the published releases: run the
-archive's own bundled checker, `python3 -B "$bundle/verify/verify_bundle.py" "$bundle"` (code
-that came inside the archive), and report its verdict labelled as checked only by the archive's
-bundled checker, not out of band. That is never an out-of-band verdict: the bundled copy is the
-one a bundle can ship to bless itself.
+No published release can read an archive whose `manifest.json` names `"seller"`, not `"party"`
+(the manifest format used before the published checker releases). If the `python3` line prints
+`FAIL bundle.unreadable`, no published Tersign release can check this archive out of band, and the
+archive cannot be verified that way: say so plainly, and report every `FAIL` line the published
+checker printed before it, which still count. Never run the checker inside the archive instead
+(it is the copy a bundle can ship to bless itself), and never call the archive older than it
+claims to be.
 
 The last line diffs the fetched files against the bundle's `verify/`. A difference is itself the finding unless the archive is older than the checker at
 that address: an archive built before 2026-10-08 can carry an earlier checker than
@@ -189,9 +189,13 @@ and any alteration of the record is detectable: by anyone holding the counter-si
 once an anchor covering it is confirmed, by anyone holding its digest. Stored record content is
 kept for seven years by default, deleted when its retention period expires, and erasable on
 request, as Section 11 of the [Terms](https://tersign.ai/legal/terms) sets out. Under Section
-11.4, erasure through the API keeps a payment receipt's payer address and transaction hash (where
-each has the form Section 11.5 sets out), for the establishment, exercise or defence of legal
-claims (the payer's dispute rights). A dispute record already opened on the record is kept
+11.4, erasure through the API keeps a payment receipt's payer address and transaction hash where
+each has the form set out in Section 11.5, for the establishment, exercise or defence of legal
+claims (the payer's dispute rights); one not kept is treated as absent. For an account that has
+accepted only a version of the Terms earlier than v1.4, erasure deletes the payer address and
+transaction hash as well, as that version provides: the payer can then no longer open a dispute on
+that record, the duplicate-charge check no longer finds it, and a dispute still open on it or on
+another record is decided without them. A dispute record already opened on the record is kept
 unchanged, including the claimant's address, the signed dispute, and any adjudication inputs and
 rationale, which may include the transaction hash; so are the record's refund records, including
 the refund amount and reason. Anyone who already holds a copy of a record keeps it, and anyone
@@ -211,9 +215,6 @@ note, a supply description or any other field you send.
   against the bundle (standard library only, no network), and `diff` the release against the
   bundle's own copy. When the only failure is `files.closedSet` over `verify/__pycache__/` or
   `oob/`, `unzip` of the archive into a new temporary directory, and the same lines on that copy.
-- For an archive older than the published releases, `python3 -B` on the archive's own
-  `verify/verify_bundle.py`, against the archive: code that came inside the archive, run on your
-  machine (`-B` keeps Python from writing bytecode into the archive).
 - For a standalone action record, `npm install --prefix <temporary directory> --save-exact
   --ignore-scripts tersign@0.6.4` into a new temporary directory, which downloads `tersign` and
   its dependencies from the npm registry without running their install scripts, then
