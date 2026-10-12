@@ -1,5 +1,5 @@
 ---
-description: Verify a Tersign receipt file or evidence bundle offline, or look a digest up on the ledger — always saying plainly what the result does and does not prove.
+description: Verify a Tersign receipt file or evidence bundle on this machine, or look a digest up on the ledger — always saying plainly what the result does and does not prove.
 ---
 
 ## Your task
@@ -12,7 +12,7 @@ report the result **without strengthening it**.
 | What they gave you | Command |
 |---|---|
 | A `0x…` 64-hex digest | `npx -y tersign@0.6.3 verify <digest>` — a lookup: asks the ledger whether it holds the record and whether its counter-signed chain holds, and prints `VALID (ledger-reported)` because nothing is recomputed on this machine. Report it with that label. Add `--ledger <url>` only if they name a different ledger; the default is printed either way. |
-| A path to a receipt JSON file | `npx -y tersign@0.6.3 verify <path> --signer 0x<issuer>` — fully offline, touches no chain and no network. Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
+| A path to a receipt JSON file | `npx -y tersign@0.6.3 verify <path> --signer 0x<issuer>` — checked on this machine; it touches no chain and no ledger (npx may fetch the `tersign` package from the npm registry when it is not cached). Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
 | A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx -y tersign@0.6.3 verify` checks receipts. Verify it inside its evidence bundle (step 2), or offline with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package (the discloser's signature only — no chain or counter-signature). |
 | A directory holding `manifest.json` + `chain.json` (an evidence bundle) | Go to step 2. |
 | Nothing | Run the genesis example so they see a live ledger answer: `npx -y tersign@0.6.3 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4` |
@@ -33,7 +33,8 @@ base=$(sed -n 's/^base=//p' "$bundle/VERIFY.md") &&
 printf '%s\n' "$base" | grep -Eqx 'https:/{2}tersign\.ai/verify/(v1|sha256/[0-9a-f]{64})/?' &&
 base=${base%/} && OOB=$(mktemp -d) &&
 curl -fsSL "$base/SHA256SUMS" -o "$OOB/SHA256SUMS" &&
-case $base in */sha256/*) ( cd "$OOB" && echo "${base##*/}  SHA256SUMS" | shasum -a 256 -c ) ;; esac &&
+case $base in */v1) pin=244af66f22afe06d36adce9880b9aa3b003306e26789cfb08d8051ef6c816993 ;; *) pin=${base##*/} ;; esac &&
+( cd "$OOB" && echo "$pin  SHA256SUMS" | shasum -a 256 -c ) &&
 for f in verify_bundle.py keccak.py secp256k1.py; do curl -fsSL "$base/$f" -o "$OOB/$f"; done &&
 ( cd "$OOB" && shasum -a 256 -c SHA256SUMS ) &&
 python3 "$OOB/verify_bundle.py" "$bundle" &&
@@ -41,7 +42,7 @@ diff -r -x SHA256SUMS "$OOB" "$bundle/verify"
 ```
 
 From the second line on, each line runs only if the one before it succeeded. For any stop before
-the `python3` line (the address lines, a `curl` failure or 404, a content-address `FAILED`, a
+the `python3` line (the address lines, a `curl` failure or 404, a digest `FAILED`, a
 `SHA256SUMS` mismatch), report that step's output and stop; never fetch another release instead.
 
 - **The address.** The `grep -c`, `sed` and `grep -Eqx` lines accept exactly one `base=` line,
@@ -51,8 +52,12 @@ the `python3` line (the address lines, a `curl` failure or 404, a content-addres
   run `grep -n '^base=' <bundle-dir>/VERIFY.md`, report what it printed (nothing means the archive
   names no published checker), and stop. Do not pick a release for it: a different release can
   fail an honest archive.
-- **The release.** For a content address, the `case` line checks that the fetched `SHA256SUMS`
-  hashes to the digest in the address, before `shasum -c` checks the files against it.
+- **The release.** The `case` line picks the digest the fetched `SHA256SUMS` must hash to: the
+  one in a content address, or, for `https://tersign.ai/verify/v1`,
+  `244af66f22afe06d36adce9880b9aa3b003306e26789cfb08d8051ef6c816993`, the content address of the
+  2026-10-07 release that address serves (listed at https://tersign.ai/verify/releases.json). The
+  line after it checks that for both forms, before `shasum -c` checks the files against
+  `SHA256SUMS` and before anything fetched runs.
 - **The diff.** The last line prints nothing when the bundle's `verify/` is byte-identical to the
   release its VERIFY.md names. A difference is itself the finding unless the archive is older than
   the checker at that address: an archive built before 2026-10-08 can carry an earlier checker
@@ -68,18 +73,34 @@ Never diff against `https://tersign.ai/verify/latest/`, or against `https://ters
 unless VERIFY.md names it: a different release differs by design. Every release is listed at
 https://tersign.ai/verify/releases.json.
 
-Stdlib Python only; no install, no account.
+Stdlib Python only; no install, no account, and the checker makes no network request.
 
 ### 3. Report it honestly — this is the part that matters
 
-The verifier distinguishes two verdicts and you must preserve the distinction:
+The block runs the checker without `--signer`, so the most it can print is
+`PASS (integrity-only)`. To bind the ledger's counter-signatures, read `ledgerSigner` from
+`curl -s https://tersign.ai/v1/ledger` (the production ledger's address; never take it from the
+artifact under test) and run the block again with `--signer 0x<ledgerSigner>` added after
+`"$bundle"` on its `python3` line. Add `--party 0x<address>` there too only when the user has the
+party's address from the party itself, out of band, never from the bundle. Skip the re-run when
+the first verdict or a `SIGNER` line names a published test key (the synthetic example archives
+use them): no `--signer` value establishes authorship of such an archive. If the re-run fails a
+signer check after the first run passed, report both: the archive is internally consistent, but
+its counter-signatures do not recover to that address.
 
-- **`PASS (integrity-only)`** — the bundle is internally consistent and tamper-evident, but the
-  signer identity was read from the bundle itself. A forger can ship a self-consistent bundle
-  under their own keys. **Do not call this "verified" without qualification.**
-- **`PASS — integrity AND authorship`** — only when `--signer <address>` was supplied from
-  **out-of-band**. The production ledger address is published at `https://tersign.ai/v1/ledger`;
-  fetch it from there, never from the artifact under test.
+The checker prints one of three passing verdicts. Report the one it printed, in its own words,
+and preserve the distinction:
+
+- **`PASS (integrity-only)`** — without `--signer`: the bundle is internally consistent and
+  tamper-evident, but every signer identity was read from the bundle itself. A forger can ship a
+  self-consistent bundle under their own keys. It also stays integrity-only when the ledger key
+  is a published test key or no party signature recovers to `--party`; quote the reason its
+  verdict line gives. **Do not call this "verified" without qualification.**
+- **`PASS — integrity AND counter-signer authorship`** — every counter-signature and the anchor
+  signature recover to the out-of-band `--signer` address. That binds the ledger's
+  counter-signatures and nothing more. **Never report it as authorship of the records.**
+- **`PASS — integrity AND authorship`** — only when, in addition, every party signature recovers
+  to the out-of-band `--party` address.
 
 The verifier also prints an `UNAUTHENTICATED` line naming the fields nothing signs (party id,
 mode, createdAt). Carry those into your summary rather than dropping them — they are exactly the

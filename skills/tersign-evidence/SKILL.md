@@ -45,9 +45,10 @@ GET /v1/receipts/{digest}/verify
 over seq 1..commitment.seq — recompute it to confirm the record is committed
 under an anchored commitment. To verify fully offline, recompute these yourself.
 The `tersign` npm package ships a verify command. A receipt file is checked on your
-machine (pass `--signer` with the issuer's address, obtained out-of-band, or the signer
-prints `UNAUTHENTICATED`); a digest is a ledger lookup, labelled `VALID (ledger-reported)`
-because nothing is recomputed:
+machine, with no chain or ledger request (pass `--signer` with the issuer's address,
+obtained out-of-band, or the signer prints `UNAUTHENTICATED`); a digest is a ledger lookup,
+labelled `VALID (ledger-reported)` because nothing is recomputed. npx may fetch the package
+from the npm registry when it is not cached:
 
 ```sh
 npx -y tersign@0.6.3 verify <receipt.json> --signer 0x<issuer>
@@ -78,12 +79,15 @@ respondents.
 ## Issue counter-signed records (sellers)
 
 ```sh
-npm install tersign
+npm install tersign@0.6.3
 ```
 
 ```ts
-import { Assure, attachToExtensions } from 'tersign';
-// sign an x402 offer-receipt and the record issued beside it; with ledger configured, the receipt is counter-signed into your chain
+import { Assure, attachToSettlementResponse } from 'tersign';
+// Assure.issueFor signs the x402 offer-receipt and the compliance record issued beside it after
+// settlement; with a ledger configured, the receipt is counter-signed into your chain.
+// attachToSettlementResponse merges both into the SettlementResponse your server sends in the
+// PAYMENT-RESPONSE header; withAssure(handler, config) wraps a fetch handler and does both.
 ```
 
 Or use the MCP server, which this plugin runs for you in Claude Code (`npx -y tersign@0.6.3`,
@@ -97,8 +101,12 @@ one, `issue_receipt` returns a signed receipt that is not chained. The dispute t
 `ledger_url`. The plugin passes these to the server as `TERSIGN_SELLER_KEY`,
 `TERSIGN_LEDGER_URL`, `TERSIGN_LEDGER_API_KEY` and `TERSIGN_LEDGER_SELLER_ID`, so when a tool's
 error names one of those variables, point the user to the matching setting: a variable exported
-in a shell does not reach the server. Outside Claude Code, `npx -y tersign@0.6.3` (no args) starts the same
-server on stdio; the package README at https://www.npmjs.com/package/tersign lists its settings.
+in a shell does not reach the server. Enter `ledger_url` without a trailing slash.
+`issue_receipt` also reads `TERSIGN_ISSUER_NAME`, `TERSIGN_ISSUER_JURISDICTION` and
+`TERSIGN_ISSUER_TAX_ID` from the environment Claude Code runs in, when they are set there, and
+puts them in the compliance record it sends; no tax ID is sent when `TERSIGN_ISSUER_TAX_ID` is
+unset. Outside Claude Code, `npx -y tersign@0.6.3` (no args) starts the same server on stdio;
+the package README at https://www.npmjs.com/package/tersign lists its settings.
 Nine tools cover issue / verify / disclose / refund / dispute.
 
 **Two things that shipped 2026-08-28/29 and change what you can prove.**
@@ -115,12 +123,14 @@ archive was built with, from the address on the `base=` line in section 0 of its
 a content address `https://tersign.ai/verify/sha256/<digest>` (every release since
 2026-10-08), or `https://tersign.ai/verify/v1` (earlier archives). Use it only if it is
 exactly one of those two forms, a trailing slash optional; if `VERIFY.md` names anything else,
-or nothing, say so and stop rather than choosing a release. For a content address, check that
-the fetched `SHA256SUMS` hashes to the digest in the address; then check the files against it,
-run the fetched `verify_bundle.py`, and `diff` the release against the bundled copy. For any
-other stop before `verify_bundle.py` runs (a failed or 404 fetch, a content-address `FAILED`, a
-`SHA256SUMS` mismatch), report that step's output and stop; never fetch another release
-instead. If the only failure is `files.closedSet` and every extra file it names is under
+or nothing, say so and stop rather than choosing a release. Check that the fetched `SHA256SUMS`
+hashes to the digest in a content address, or, for `https://tersign.ai/verify/v1`, to
+`244af66f22afe06d36adce9880b9aa3b003306e26789cfb08d8051ef6c816993`, the content address of the
+2026-10-07 release that address serves; then check the files against it, run the fetched
+`verify_bundle.py`, and `diff` the release against the bundled copy. For any other stop before
+`verify_bundle.py` runs (a failed or 404 fetch, a digest `FAILED`, a `SHA256SUMS` mismatch),
+report that step's output and stop; never fetch another release instead.
+If the only failure is `files.closedSet` and every extra file it names is under
 `verify/__pycache__/` or `oob/` (an earlier archive's own steps can leave either there), re-run on a fresh copy of the archive (a fresh unzip) and report both
 runs. A difference is itself the finding unless the archive is older than the checker at that
 address: an archive built before 2026-10-08 can carry an earlier checker than
@@ -128,16 +138,27 @@ address: an archive built before 2026-10-08 can carry an earlier checker than
 release is at `https://tersign.ai/verify/latest/`, and `https://tersign.ai/verify/releases.json`
 lists them all.
 
-The verifier separates `PASS (integrity-only)` from `PASS — integrity AND authorship`; the
-second needs `--signer` from an address you obtained out-of-band at
-`https://tersign.ai/v1/ledger`. It also prints an `UNAUTHENTICATED` line naming the fields
-nothing signs. Carry that line into whatever you report — a verdict must never be stronger
-than its checks.
+The bundle checker prints one of three passing verdicts; report the one it printed, in its own
+words.
+
+- `PASS (integrity-only)`: run without `--signer`, every signer identity was read from the
+  bundle itself. It also stays integrity-only when the ledger key is a published test key or no
+  party signature recovers to `--party`, and says why.
+- `PASS — integrity AND counter-signer authorship`: every counter-signature and the anchor
+  signature recover to `--signer`, the ledger address you take out-of-band from
+  `https://tersign.ai/v1/ledger`. That binds the ledger's counter-signatures, never authorship
+  of the records.
+- `PASS — integrity AND authorship`: only when, in addition, every party signature recovers to
+  `--party`, an address obtained out-of-band from the party itself.
+
+The checker also prints an `UNAUTHENTICATED` line naming the fields nothing signs. Carry that
+line into whatever you report — a verdict must never be stronger than its checks.
 
 Agent action records (`ActionRecordV1`) capture non-payment evidence — agent
-disclosures, governance outcomes — digest-bound and GDPR-minimized. A disclosure record is
-your own signed statement (kind, time, medium, text digest); Tersign counter-signs
-its chain position. Action records chain exactly like receipts; verify one offline
+disclosures, governance outcomes. A disclosure record is your own signed statement: it
+carries a digest of the disclosure text, never the text, while the agent ID, the kind, the
+medium and resource URL when given, and the time go as they are; Tersign counter-signs its
+chain position. Action records chain exactly like receipts; verify one offline
 inside its evidence bundle, or with `verifyActionRecord` from the `tersign` package (the discloser's signature only — no chain or counter-signature).
 
 ## What this skill is not
