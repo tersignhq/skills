@@ -9,9 +9,11 @@ Tersign is a neutral, counter-signed, hash-chained evidence ledger for agent
 commerce. Sellers (or their agents) submit signed artifacts — x402
 offer-receipts, agent action records — at transaction time; the ledger
 counter-signs each one into a per-seller hash chain. Because the counter-signature
-and chain position exist **before any dispute arises**, a Tersign record is an
-exhibit, not testimony: any court, jury, auditor, or counterparty can verify it
-without trusting the parties or Tersign itself.
+and chain position exist **before any dispute arises**, anyone holding a record can
+check its integrity and its order offline, with Tersign's code or their own, without
+trusting the party that kept it. Two things still rest on Tersign: that the ledger
+address at `GET /v1/ledger` is Tersign's, and that Tersign keeps one history per
+chain. Records never submitted to the ledger are outside every check.
 
 Base URL (hosted ledger): `https://tersign.ai`
 
@@ -29,7 +31,7 @@ Base URL (hosted ledger): `https://tersign.ai`
 - **Absence is informative.** A counterparty who cannot produce a counter-signed
   record for a claimed transaction is asserting testimony without an exhibit.
 
-## Verify a record (no account, no trust)
+## Verify a record (no account)
 
 ```
 GET /v1/receipts/{digest}/verify
@@ -112,9 +114,10 @@ Nine tools cover issue / verify / disclose / refund / dispute.
 **Two things that shipped 2026-08-28/29 and change what you can prove.**
 
 *Chain commitment.* Every anchor now stamps an accumulator folded over each
-counter-signed link from seq 1, so one anchored digest commits to the WHOLE prefix —
-existence *and* no-omission, not just "this record existed". A truncated or substituted
-prefix fails even though every signature in it still recovers.
+counter-signed link from seq 1, so whoever holds a chain's records 1..seq can check them
+against one anchored digest: a truncated or substituted prefix fails even though every
+signature in it still recovers. That Tersign keeps one history per chain is not something
+the digest shows, and records never submitted to the ledger are outside it.
 
 *The verifier is published out-of-band.* An evidence bundle ships a copy of `verify/`
 inside itself, which is fine for a worked example and wrong for evidence handed to you by
