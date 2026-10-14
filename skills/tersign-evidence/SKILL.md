@@ -1,6 +1,6 @@
 ---
 name: tersign-evidence
-description: "Produce, verify and submit counter-signed transaction evidence via Tersign, the neutral evidence layer for agent commerce. Use when an agent needs dispute-ready evidence for an arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs an independently counter-signed record of what an agent did or disclosed. Trigger on: evidence, evidence envelope, counter-signed receipt, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, exhibit, ERC-1497 evidence, proof of delivery, proof of transaction, receipt digest, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is filed or answered and the agent holds, or its counterparty claims, transaction records. Do NOT trigger for payment execution or for choosing an arbitration venue; this skill supplies the evidence those layers consume."
+description: "Produce, verify and submit counter-signed transaction evidence via Tersign, the neutral evidence layer for agent commerce. Use when an agent needs venue-formatted evidence for an arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs an independently counter-signed record of what an agent did or disclosed. Trigger on: evidence, evidence envelope, counter-signed receipt, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, exhibit, ERC-1497 evidence, proof of delivery, proof of transaction, receipt digest, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is filed or answered and the agent holds, or its counterparty claims, transaction records. Do NOT trigger for payment execution or for choosing an arbitration venue; this skill supplies the evidence those layers consume."
 ---
 
 # Tersign Evidence
@@ -57,7 +57,7 @@ npx -y tersign@0.6.4 verify <receipt.json> --signer 0x<issuer>
 npx -y tersign@0.6.4 verify <0xdigest> --ledger https://tersign.ai
 ```
 
-## Get dispute-ready evidence (the envelope)
+## Get venue-formatted evidence (the envelope)
 
 ```
 GET /v1/receipts/{digest}/envelope?venue={generic|internet-court|kleros|uma}&statement={optional, ≤500 chars}
