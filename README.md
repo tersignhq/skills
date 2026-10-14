@@ -46,7 +46,7 @@ error names one of those variables, set the matching setting.
 
 Three more variables reach the server from the environment Claude Code runs in, when they are set
 there: `TERSIGN_ISSUER_NAME`, `TERSIGN_ISSUER_JURISDICTION` and `TERSIGN_ISSUER_TAX_ID`. They are
-not credentials and not plugin settings. `issue_receipt` puts them in the compliance record it
+not credentials and not plugin settings. `issue_receipt` puts them in the compliance-fields record it
 signs and sends to the ledger, as the table under
 [What this plugin runs, sends and stores](#what-this-plugin-runs-sends-and-stores) shows.
 
@@ -172,7 +172,7 @@ configuration error without any network request.
 |---|---|---|
 | `verify_receipt`, `verify_compliance_record` | None | Nothing: they run offline |
 | `record_disclosure` | `POST {ledger}/v1/disclose` | A disclosure record signed with your key: the agent ID, the disclosure kind, the medium and resource URL when given, the time, and a digest of the disclosure text. The text itself never leaves your machine. No API key is sent; the first call creates a free account bound to your key's address |
-| `issue_receipt` | `POST {ledger}/v1/receipts`, only when `ledger_url`, `ledger_api_key` and `ledger_seller_id` are all set; otherwise none | The API key as a bearer token, the seller ID, the signed receipt (network, resource URL, payer address, time, transaction hash) and its compliance record (supply description, tax scheme and currency, principal when given, the issuer name and jurisdiction, which are `unnamed seller` and `unknown` unless `TERSIGN_ISSUER_NAME` or `TERSIGN_ISSUER_JURISDICTION` is set in the environment Claude Code runs in, and an issuer tax ID only when `TERSIGN_ISSUER_TAX_ID` is set there) |
+| `issue_receipt` | `POST {ledger}/v1/receipts`, only when `ledger_url`, `ledger_api_key` and `ledger_seller_id` are all set; otherwise none | The API key as a bearer token, the seller ID, the signed receipt (network, resource URL, payer address, time, transaction hash) and its compliance-fields record (supply description, tax scheme and currency, principal when given, the issuer name and jurisdiction, which are `unnamed seller` and `unknown` unless `TERSIGN_ISSUER_NAME` or `TERSIGN_ISSUER_JURISDICTION` is set in the environment Claude Code runs in, and an issuer tax ID only when `TERSIGN_ISSUER_TAX_ID` is set there) |
 | `record_refund` | `POST {ledger}/v1/refunds`, with the same three settings | The API key as a bearer token, the original receipt digest, the amount and the reason |
 | `open_dispute` | `POST {ledger}/v1/disputes`, when `ledger_url` is set | A dispute signed with your key: the receipt digest, the reason, the claimed amount, the statement when given, and the time |
 | `submit_dispute_evidence` | `POST {ledger}/v1/disputes/{digest}/evidence`, when `ledger_url` is set | Evidence signed with your key: the dispute digest, your role, and each artifact's kind, digest, time and note (digests only; the content stays with you). As respondent, also the API key as a bearer token when one is set |

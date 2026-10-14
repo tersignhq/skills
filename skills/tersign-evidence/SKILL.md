@@ -84,7 +84,7 @@ npm install --save-exact tersign@0.6.4
 
 ```ts
 import { Assure, attachToSettlementResponse } from 'tersign';
-// Assure.issueFor signs the x402 offer-receipt and the compliance record issued beside it after
+// Assure.issueFor signs the x402 offer-receipt and the compliance-fields record issued beside it after
 // settlement; with a ledger configured, the receipt is counter-signed into your chain.
 // attachToSettlementResponse merges both into the SettlementResponse your server sends in the
 // PAYMENT-RESPONSE header; withAssure(handler, config) wraps a fetch handler and does both.
@@ -104,7 +104,7 @@ error names one of those variables, point the user to the matching setting: a va
 in a shell does not reach the server.
 `issue_receipt` also reads `TERSIGN_ISSUER_NAME`, `TERSIGN_ISSUER_JURISDICTION` and
 `TERSIGN_ISSUER_TAX_ID` from the environment Claude Code runs in, when they are set there, and
-puts them in the compliance record it sends; no tax ID is sent when `TERSIGN_ISSUER_TAX_ID` is
+puts them in the compliance-fields record it sends; no tax ID is sent when `TERSIGN_ISSUER_TAX_ID` is
 unset. Outside Claude Code, `npx -y tersign@0.6.4` (no args) starts the same server on stdio;
 the package README at https://www.npmjs.com/package/tersign lists its settings.
 Nine tools cover issue / verify / disclose / refund / dispute.
