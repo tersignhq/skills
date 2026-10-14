@@ -1,7 +1,7 @@
 {
   "name": "tersign",
   "displayName": "Tersign",
-  "description": "Counter-signed evidence for agent commerce. Verify a counterparty's x402 receipt file offline, or check an evidence bundle with the action records in it using a published checker fetched from tersign.ai, with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account with a key generated on your machine); issue counter-signed receipts from a seller account you configure in the plugin's settings; fetch a venue-formatted envelope for the venue that will hear it.",
+  "description": "The record layer for the machine age: counter-signed records of what AI agents do and pay. Verify a counterparty's x402 receipt file offline, or check an evidence bundle with the action records in it using a published checker fetched from tersign.ai, with no account and no API key; record disclosures into a neutral hash-chained ledger anchored to Bitcoin with no configuration (the first call self-provisions a signer-keyed account with a key generated on your machine); issue counter-signed receipts from a seller account you configure in the plugin's settings; fetch a venue-formatted envelope for the venue that will hear it.",
   "version": "0.2.0",
   "author": {
     "name": "Tersign",

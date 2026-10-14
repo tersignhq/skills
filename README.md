@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://tersign.ai"><img src="https://raw.githubusercontent.com/tersignhq/.github/main/assets/banner.svg" alt="Tersign — the evidence layer for the agent economy" width="760"></a>
+  <a href="https://tersign.ai"><img src="https://raw.githubusercontent.com/tersignhq/.github/main/assets/banner.svg" alt="Tersign — the record layer for the machine age" width="760"></a>
 </p>
 
 # Tersign for Claude Code
 
-The Tersign plugin for Claude Code, published by [Tersign](https://tersign.ai) — the evidence
-layer for the agent economy. It bundles the MCP server, the `tersign-evidence` skill, and a
+The Tersign plugin for Claude Code, published by [Tersign](https://tersign.ai) — the record
+layer for the machine age. It bundles the MCP server, the `tersign-evidence` skill, and a
 `/verify` command.
 
 **Venues rotate. The transcript endures.**

@@ -1,14 +1,15 @@
 ---
 name: tersign-evidence
-description: "Produce, verify and submit counter-signed transaction evidence via Tersign, the neutral evidence layer for agent commerce. Use when an agent needs venue-formatted evidence for an arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs an independently counter-signed record of what an agent did or disclosed. Trigger on: evidence, evidence envelope, counter-signed receipt, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, exhibit, ERC-1497 evidence, proof of delivery, proof of transaction, receipt digest, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is filed or answered and the agent holds, or its counterparty claims, transaction records. Do NOT trigger for payment execution or for choosing an arbitration venue; this skill supplies the evidence those layers consume."
+description: "Produce, verify and submit counter-signed transaction evidence via Tersign, the record layer for the machine age. Use when an agent needs venue-formatted evidence for an arbitration venue (Internet Court, Kleros, UMA), needs to verify a counterparty's x402 receipt or action record without trusting them, needs to issue counter-signed receipts as a seller, or needs an independently counter-signed record of what an agent did or disclosed. Trigger on: evidence, evidence envelope, counter-signed receipt, verify a receipt, hash chain, chain of custody, tamper-evident record, audit trail, dispute evidence, exhibit, ERC-1497 evidence, proof of delivery, proof of transaction, receipt digest, x402 receipt, offer-receipt, action record, agent disclosure record. Also trigger when a dispute is filed or answered and the agent holds, or its counterparty claims, transaction records. Do NOT trigger for payment execution or for choosing an arbitration venue; this skill supplies the evidence those layers consume."
 ---
 
 # Tersign Evidence
 
-Tersign is a neutral, counter-signed, hash-chained evidence ledger for agent
-commerce. Sellers (or their agents) submit signed artifacts — x402
-offer-receipts, agent action records — at transaction time; the ledger
-counter-signs each one into a per-seller hash chain. Because the counter-signature
+Tersign is the record layer for the machine age: a counter-signed, hash-chained
+ledger of what AI agents do and pay, kept by a party outside the deal. Sellers
+(or their agents) submit signed artifacts — x402 offer-receipts, agent action
+records — at transaction time; the ledger counter-signs each one into a per-seller
+hash chain. Because the counter-signature
 and chain position exist **before any dispute arises**, anyone holding a record can
 check its integrity and its order offline, with Tersign's code or their own, without
 trusting the party that kept it. Two things still rest on Tersign: that the ledger
@@ -177,8 +178,8 @@ report it that way, never as the issuer's record.
 
 ## What this skill is not
 
-Tersign does not move money, hold funds, or run an arbitration venue. It is the
-evidence layer: payments happen on x402/MPP rails; `adjudicate_dispute` runs deterministic
+Tersign does not move money, hold funds, or run an arbitration venue. It keeps the
+record: payments happen on x402/MPP rails; `adjudicate_dispute` runs deterministic
 triage — a machine-decidable claim gets a Triage Result from pre-committed outcomes (refund or
 uphold), data, not a judgment; anything else escalates to the venue the parties select. The
 transcript is what endures across all of them.
