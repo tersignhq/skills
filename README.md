@@ -209,8 +209,8 @@ note, a supply description or any other field you send.
   --signer 0x…`, which checks a receipt file on your machine and contacts no chain and no ledger.
   npx fetches `tersign` and its dependencies from the npm registry when they are not already cached.
 - For an evidence bundle, the `curl` lines above: they download `SHA256SUMS`, `verify_bundle.py`,
-  `keccak.py` and `secp256k1.py` from the https://tersign.ai/verify/ release the bundle's
-  `VERIFY.md` names into a new temporary directory, check `SHA256SUMS` against the release's digest
+  `keccak.py` and `secp256k1.py` from the verifier release the bundle's `VERIFY.md` names
+  (`https://tersign.ai/verify/sha256/<digest>/`) into a new temporary directory, check `SHA256SUMS` against the release's digest
   and the files against `SHA256SUMS` with `shasum`, run `python3 verify_bundle.py` on your machine
   against the bundle (standard library only, no network), and `diff` the release against the
   bundle's own copy. When the only failure is `files.closedSet` over `verify/__pycache__/` or
