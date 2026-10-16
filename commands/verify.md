@@ -11,11 +11,11 @@ report the result **without strengthening it**.
 
 | What they gave you | Command |
 |---|---|
-| A `0x…` 64-hex digest | `npx -y tersign@0.6.4 verify <digest>` — a lookup: asks the ledger whether it holds the record and whether its counter-signed chain holds, and prints `VALID (ledger-reported)` because nothing is recomputed on this machine. Report it with that label. Add `--ledger <url>` only if they name a different ledger; the default is printed either way. |
-| A path to a receipt JSON file | `npx -y tersign@0.6.4 verify <path> --signer 0x<issuer>` — checked on this machine; it touches no chain and no ledger (npx may fetch the `tersign` package from the npm registry when it is not cached). Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
-| A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx -y tersign@0.6.4 verify` checks receipts. Verify it inside its evidence bundle (step 2), or on this machine with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package, as in step 1a. |
+| A `0x…` 64-hex digest | `npx -y tersign@0.6.7 verify <digest>` — a lookup: asks the ledger whether it holds the record and whether its counter-signed chain holds, and prints `VALID (ledger-reported)` because nothing is recomputed on this machine. Report it with that label. Add `--ledger <url>` only if they name a different ledger; the default is printed either way. |
+| A path to a receipt JSON file | `npx -y tersign@0.6.7 verify <path> --signer 0x<issuer>` — checked on this machine; it touches no chain and no ledger (npx may fetch the `tersign` package from the npm registry when it is not cached). Take the issuer's address from out-of-band; without `--signer` the signer prints `UNAUTHENTICATED`, and your report keeps that word. |
+| A standalone action-record file (`record` + `attestation`) | Not a CLI input: `npx -y tersign@0.6.7 verify` checks receipts. Verify it inside its evidence bundle (step 2), or on this machine with `verifyActionRecord(signed, issuerAddress)` from the `tersign` package, as in step 1a. |
 | A directory holding `manifest.json` + `chain.json` (an evidence bundle) | Go to step 2. |
-| Nothing | Run the genesis example so they see a live ledger answer: `npx -y tersign@0.6.4 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4` |
+| Nothing | Run the genesis example so they see a live ledger answer: `npx -y tersign@0.6.7 verify 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4` |
 
 ### 1a. A standalone action record
 
@@ -29,7 +29,7 @@ no such address.
 record='<absolute-path-to-record-file>'
 issuer='<issuer-address>'
 NPMDIR=$(mktemp -d) &&
-npm install --prefix "$NPMDIR" --save-exact --ignore-scripts tersign@0.6.4 &&
+npm install --prefix "$NPMDIR" --save-exact --ignore-scripts tersign@0.6.7 &&
 ( cd "$NPMDIR" && node --input-type=module -e 'import { readFileSync } from "node:fs"; import { verifyActionRecord } from "tersign"; const [file, issuer] = process.argv.slice(1); console.log(JSON.stringify(await verifyActionRecord(JSON.parse(readFileSync(file, "utf8")), issuer || undefined)));' "$record" "$issuer" )
 ```
 

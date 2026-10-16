@@ -54,8 +54,8 @@ labelled `VALID (ledger-reported)` because nothing is recomputed. npx may fetch 
 from the npm registry when it is not cached:
 
 ```sh
-npx -y tersign@0.6.4 verify <receipt.json> --signer 0x<issuer>
-npx -y tersign@0.6.4 verify <0xdigest> --ledger https://tersign.ai
+npx -y tersign@0.6.7 verify <receipt.json> --signer 0x<issuer>
+npx -y tersign@0.6.7 verify <0xdigest> --ledger https://tersign.ai
 ```
 
 ## Get venue-formatted evidence (the envelope)
@@ -82,7 +82,7 @@ respondents.
 ## Issue counter-signed records (sellers)
 
 ```sh
-npm install --save-exact tersign@0.6.4
+npm install --save-exact tersign@0.6.7
 ```
 
 ```ts
@@ -93,7 +93,7 @@ import { Assure, attachToSettlementResponse } from 'tersign';
 // PAYMENT-RESPONSE header; withAssure(handler, config) wraps a fetch handler and does both.
 ```
 
-Or use the MCP server, which this plugin runs for you in Claude Code (`npx -y tersign@0.6.4`,
+Or use the MCP server, which this plugin runs for you in Claude Code (`npx -y tersign@0.6.7`,
 stdio). **Verifying and recording disclosures need no configuration** — since
 0.4.7 the first `record_disclosure` call self-provisions a signer-keyed account (key from
 the OS keychain, else `~/.tersign/signer.key`, generated on first start when neither exists).
@@ -108,7 +108,7 @@ in a shell does not reach the server.
 `issue_receipt` also reads `TERSIGN_ISSUER_NAME`, `TERSIGN_ISSUER_JURISDICTION` and
 `TERSIGN_ISSUER_TAX_ID` from the environment Claude Code runs in, when they are set there, and
 puts them in the compliance-fields record it sends; no tax ID is sent when `TERSIGN_ISSUER_TAX_ID` is
-unset. Outside Claude Code, `npx -y tersign@0.6.4` (no args) starts the same server on stdio;
+unset. Outside Claude Code, `npx -y tersign@0.6.7` (no args) starts the same server on stdio;
 the package README at https://www.npmjs.com/package/tersign lists its settings.
 Nine tools cover issue / verify / disclose / refund / dispute.
 

@@ -2,7 +2,7 @@
   "mcpServers": {
     "tersign": {
       "command": "npx",
-      "args": ["-y", "tersign@0.6.4"],
+      "args": ["-y", "tersign@0.6.7"],
       "env": {
         "TERSIGN_SELLER_KEY": "${user_config.seller_key}",
         "TERSIGN_LEDGER_API_KEY": "${user_config.ledger_api_key}",
